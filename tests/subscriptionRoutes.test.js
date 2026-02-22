@@ -3,11 +3,12 @@ const express = require('express');
 
 // Mock services
 jest.mock('../services/subscriptionService');
+jest.mock('../services/conversionService');
 jest.mock('../utils');
 
 const subscriptionService = require('../services/subscriptionService');
+const { ConversionService } = require('../services/conversionService');
 const { 
-  convertSubscription, 
   safeBase64Encode, 
   filterSnellNodes 
 } = require('../utils');
@@ -19,9 +20,29 @@ app.use(express.json());
 const subscriptionRoutes = require('../routes/subscriptionRoutes');
 app.use('/', subscriptionRoutes);
 
+const buildSubscriptionData = (nodes, overrides = {}) => ({
+  nodes,
+  subscriptionUrl: 'http://localhost:3000/test-subscription',
+  config: {
+    subconvertApi: null,
+    customTemplate: null,
+    useDefaultTemplate: true,
+    ...overrides
+  }
+});
+
 describe('Subscription Routes', () => {
+  let convertMock;
+  let getNodesOnlyMock;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    convertMock = jest.fn();
+    getNodesOnlyMock = jest.fn();
+    ConversionService.mockImplementation(() => ({
+      convert: convertMock,
+      getNodesOnly: getNodesOnlyMock
+    }));
   });
 
   describe('GET /:path', () => {
@@ -29,7 +50,9 @@ describe('Subscription Routes', () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1\nss://link2\nvless://link3';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
 
       const response = await request(app)
@@ -76,7 +99,9 @@ describe('Subscription Routes', () => {
       const mockContent = 'vmess://link1\nss://link2';
       const encodedContent = 'dm1lc3Mov9saW5azE=';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
       safeBase64Encode.mockReturnValue(encodedContent);
 
@@ -92,62 +117,70 @@ describe('Subscription Routes', () => {
   });
 
   describe('GET /:path?format=clash', () => {
-    it('should return YAML content for clash format', async () => {
+    it('should return content for clash format with BOM', async () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1\nss://link2';
       const clashContent = 'proxies:\n  - vmess link\n  - ss link';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
-      convertSubscription.mockReturnValue(clashContent);
+      convertMock.mockResolvedValue(clashContent);
 
       const response = await request(app)
         .get(`/${path}?format=clash`)
         .expect(200);
 
-      expect(response.headers['content-type']).toBe('text/yaml; charset=utf-8');
-      expect(response.text).toBe(clashContent);
-      expect(convertSubscription).toHaveBeenCalledWith(mockContent, 'clash');
+      expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
+      expect(response.text).toBe(`\uFEFF${clashContent}`);
+      expect(convertMock).toHaveBeenCalledWith(mockContent, 'clash', expect.objectContaining({
+        subscriptionUrl: 'http://localhost:3000/test-subscription'
+      }));
     });
   });
 
   describe('GET /:path?format=surge', () => {
-    it('should return surge format content', async () => {
+    it('should return surge format content with BOM', async () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1\nss://link2';
       const surgeContent = '[Proxy Group]\nvmess link\nss link';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
-      convertSubscription.mockReturnValue(surgeContent);
+      convertMock.mockResolvedValue(surgeContent);
 
       const response = await request(app)
         .get(`/${path}?format=surge`)
         .expect(200);
 
       expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
-      expect(response.text).toBe(surgeContent);
-      expect(convertSubscription).toHaveBeenCalledWith(mockContent, 'surge');
+      expect(response.text).toBe(`\uFEFF${surgeContent}`);
+      expect(convertMock).toHaveBeenCalledWith(mockContent, 'surge', expect.any(Object));
     });
   });
 
   describe('GET /:path?format=shadowsocks', () => {
-    it('should return shadowsocks format content', async () => {
+    it('should return shadowsocks format content with BOM', async () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1\nss://link2';
       const ssContent = 'shadowsocks format content';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
-      convertSubscription.mockReturnValue(ssContent);
+      convertMock.mockResolvedValue(ssContent);
 
       const response = await request(app)
         .get(`/${path}?format=shadowsocks`)
         .expect(200);
 
       expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
-      expect(response.text).toBe(ssContent);
-      expect(convertSubscription).toHaveBeenCalledWith(mockContent, 'shadowsocks');
+      expect(response.text).toBe(`\uFEFF${ssContent}`);
+      expect(convertMock).toHaveBeenCalledWith(mockContent, 'shadowsocks', expect.any(Object));
     });
   });
 
@@ -156,7 +189,9 @@ describe('Subscription Routes', () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
 
       const response = await request(app)
         .get(`/${path}?format=unsupported`)
@@ -175,17 +210,19 @@ describe('Subscription Routes', () => {
       const mockContent = 'vmess://link1';
       const clashContent = 'yaml content';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
-      convertSubscription.mockReturnValue(clashContent);
+      convertMock.mockResolvedValue(clashContent);
 
       const response = await request(app)
         .get(`/${path}/${format}`)
         .expect(200);
 
-      expect(response.headers['content-type']).toBe('text/yaml; charset=utf-8');
-      expect(response.text).toBe(clashContent);
-      expect(convertSubscription).toHaveBeenCalledWith(mockContent, format);
+      expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
+      expect(response.text).toBe(`\uFEFF${clashContent}`);
+      expect(convertMock).toHaveBeenCalledWith(mockContent, format, expect.any(Object));
     });
 
     it('should return v2ray base64 format', async () => {
@@ -194,7 +231,9 @@ describe('Subscription Routes', () => {
       const mockContent = 'vmess://link1';
       const encodedContent = 'base64content';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
       safeBase64Encode.mockReturnValue(encodedContent);
 
@@ -211,7 +250,9 @@ describe('Subscription Routes', () => {
       const format = 'unsupported';
       const mockContent = 'vmess://link1';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
 
       const response = await request(app)
         .get(`/${path}/${format}`)
@@ -228,7 +269,9 @@ describe('Subscription Routes', () => {
       const path = 'empty-subscription';
       const mockContent = '';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
 
       const response = await request(app)
@@ -244,7 +287,9 @@ describe('Subscription Routes', () => {
       const mockContent = 'Node1=snell,server,1000,cipher,password\nNode2=snell,server2,2000,cipher2,password2';
       const filteredContent = '';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(filteredContent);
 
       const response = await request(app)
@@ -258,10 +303,12 @@ describe('Subscription Routes', () => {
       const path = 'test-subscription-with-dashes_and_123';
       const mockContent = 'vmess://link1';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
 
-      const response = await request(app)
+      await request(app)
         .get(`/${path}`)
         .expect(200);
 
@@ -272,10 +319,12 @@ describe('Subscription Routes', () => {
       const longPath = 'a'.repeat(50); // Max length
       const mockContent = 'vmess://link1';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
 
-      const response = await request(app)
+      await request(app)
         .get(`/${longPath}`)
         .expect(200);
 
@@ -286,7 +335,9 @@ describe('Subscription Routes', () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1';
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
 
       const response = await request(app)
@@ -318,7 +369,9 @@ describe('Subscription Routes', () => {
       const mockContent = 'vmess://link1';
       const error = new Error('Encoding failed');
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockImplementation(() => {
         throw error;
       });
@@ -335,11 +388,11 @@ describe('Subscription Routes', () => {
       const mockContent = 'vmess://link1';
       const error = new Error('Conversion failed');
 
-      subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+      subscriptionService.generateSubscriptionContent.mockResolvedValue(
+        buildSubscriptionData(mockContent)
+      );
       filterSnellNodes.mockReturnValue(mockContent);
-      convertSubscription.mockImplementation(() => {
-        throw error;
-      });
+      convertMock.mockRejectedValue(error);
 
       const response = await request(app)
         .get(`/${path}?format=clash`)
@@ -354,7 +407,7 @@ describe('Subscription Routes', () => {
       const path = 'test-subscription';
       const mockContent = 'vmess://link1';
       const testCases = [
-        { format: 'clash', expectedType: 'text/yaml; charset=utf-8' },
+        { format: 'clash', expectedType: 'text/plain; charset=utf-8' },
         { format: 'surge', expectedType: 'text/plain; charset=utf-8' },
         { format: 'shadowsocks', expectedType: 'text/plain; charset=utf-8' },
         { format: 'v2ray', expectedType: 'text/plain; charset=utf-8' },
@@ -362,9 +415,11 @@ describe('Subscription Routes', () => {
       ];
 
       for (const testCase of testCases) {
-        subscriptionService.generateSubscriptionContent.mockResolvedValue(mockContent);
+        subscriptionService.generateSubscriptionContent.mockResolvedValue(
+          buildSubscriptionData(mockContent)
+        );
         filterSnellNodes.mockReturnValue(mockContent);
-        convertSubscription.mockReturnValue('converted content');
+        convertMock.mockResolvedValue('converted content');
         safeBase64Encode.mockReturnValue('encoded content');
 
         const url = testCase.format ? `/${path}?format=${testCase.format}` : `/${path}`;

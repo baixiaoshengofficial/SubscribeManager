@@ -13,6 +13,8 @@
     "close": "关闭",
     "confirm": "确认",
     "copied": "已复制到剪贴板",
+    "copy": "复制",
+    "import": "导入",
     "copy_failed": "复制失败",
     "network_error": "网络错误，请重试",
     "error_prefix": "错误: "
@@ -20,7 +22,39 @@
   "navbar": {
     "brand": "Subscribe-Manager",
     "config_manager": "协议说明",
+    "console": "控制台",
     "logout": "退出"
+  },
+  "admin": {
+    "eyebrow": "管理面板",
+    "title": "订阅与节点控制台",
+    "subtitle": "管理订阅与节点，处理更顺手。"
+  },
+  "config": {
+    "page_title": "协议说明",
+    "title": "协议说明",
+    "subtitle": "展示各客户端对不同代理协议的支持情况，帮助您选择合适的客户端配置",
+    "overview_title": "协议支持概览",
+    "overview_desc": "以下是目前各客户端支持的协议类型概览。不同的客户端因其设计目标和技术实现，对协议的支持程度各不相同。",
+    "matrix_title": "协议支持矩阵",
+    "matrix_desc": "详细展示了每种协议在不同客户端中的支持情况。✓ 表示该客户端支持该协议，✗ 表示不支持。",
+    "supported": "✓ 支持",
+    "not_supported": "✗ 不支持",
+    "table": {
+      "protocol": "协议"
+    },
+    "labels": {
+      "description": "描述:",
+      "supported_count": "支持协议数:",
+      "count_unit": " 种",
+      "supported_protocols": "支持的协议:"
+    },
+    "clients": {
+      "clash_desc": "功能强大的代理工具，支持规则分流",
+      "surge_desc": "iOS/macOS 平台专业网络调试工具",
+      "shadowsocks_desc": "轻量级代理协议专用客户端",
+      "universal_desc": "通用客户端，支持所有主流协议"
+    }
   },
   "login": {
     "page_title": "SubscribeManager - 登录",
@@ -44,10 +78,16 @@
     "remove": "删除",
     "select_all": "全选",
     "unselect": "取消",
-    "cancel": "取消"
+    "cancel": "取消",
+    "open_universal": "打开通用链接页面",
+    "open_v2ray": "打开 V2Ray 链接页面",
+    "open_surge": "打开 Surge 链接页面",
+    "open_clash": "打开 Clash 链接页面",
+    "open_shadowsocks": "打开 Shadowsocks 链接页面"
   },
   "subscription": {
     "add_title": "添加新订阅",
+    "edit_info": "编辑订阅信息",
     "name_label": "订阅名称",
     "path_label": "订阅路径",
     "path_help": "路径只能包含小写字母、数字和连字符，长度在5-50个字符之间",
@@ -90,6 +130,9 @@
   "nodes": {
     "title": "节点",
     "content_label": "节点内容",
+    "count_label": "节点",
+    "view_table": "列表视图",
+    "view_card": "卡片视图",
     "content_required": "缺少节点内容",
     "unsupported_format": "不支持的节点格式",
     "invalid_enabled": "无效的 enabled 值",
@@ -129,6 +172,13 @@
     "url_required": "请输入订阅链接",
     "invalid_url": "订阅链接格式无效"
   },
+  "clients": {
+    "universal": "通用",
+    "v2ray": "V2Ray",
+    "surge": "Surge",
+    "clash": "Clash",
+    "shadowsocks": "SS"
+  },
   "subconverter": {
     "title": "配置 Subconverter",
     "subconvert_url": "Subconverter API URL",
@@ -165,6 +215,10 @@
     "label": "语言",
     "en": "English",
     "zh": "简体中文"
+  },
+  "theme": {
+    "to_light": "切换亮色",
+    "to_dark": "切换暗色"
   }
 }
 

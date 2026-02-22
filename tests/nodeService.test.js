@@ -19,14 +19,15 @@ jest.mock('../utils', () => ({
   tryDecodeNodeContent: jest.fn((link) => link),
   cleanNodeLink: jest.fn((link) => link),
   isValidNodeLink: jest.fn(() => true),
+  getNodeType: jest.fn(() => 'ss'),
   NODE_TYPES: {
-    VMess: 'vmess://',
+    VMESS: 'vmess://',
     SS: 'ss://',
     VLESS: 'vless://',
-    Trojan: 'trojan://',
-    Hysteria2: 'hysteria2://',
+    TROJAN: 'trojan://',
+    HYSTERIA2: 'hysteria2://',
     TUIC: 'tuic://',
-    Snell: 'snell,'
+    SNELL: 'snell,'
   },
   safeBase64Decode: jest.fn((str) => str)
 }));
@@ -100,7 +101,8 @@ describe('NodeService', () => {
         subscriptionId: 1,
         name: name,
         originalLink: content,
-        nodeOrder: order
+        nodeOrder: order,
+        type: 'ss'
       });
     });
 
@@ -118,7 +120,8 @@ describe('NodeService', () => {
         subscriptionId: 1,
         name: name,
         originalLink: content,
-        nodeOrder: 0
+        nodeOrder: 0,
+        type: 'ss'
       });
     });
 
@@ -164,7 +167,8 @@ describe('NodeService', () => {
         subscriptionId: 1,
         name: 'MyNode',
         originalLink: content,
-        nodeOrder: 0
+        nodeOrder: 0,
+        type: 'ss'
       });
     });
   });
@@ -182,8 +186,8 @@ describe('NodeService', () => {
 
       expect(mockBaseService.getSubscriptionIdByPath).toHaveBeenCalledWith(subscriptionPath);
       expect(dbRun).toHaveBeenCalledWith(
-        'UPDATE nodes SET original_link = ?, name = ? WHERE id = ? AND subscription_id = ?',
-        [content, expect.any(String), nodeId, 1]
+        'UPDATE nodes SET original_link = ?, name = ?, type = ? WHERE id = ? AND subscription_id = ?',
+        [content, expect.any(String), 'ss', nodeId, 1]
       );
     });
 
@@ -198,38 +202,42 @@ describe('NodeService', () => {
         .rejects.toThrow('nodes.content_required');
     });
 
-    it('should try decode base64 content', async () => {
+    it('should try decode node content', async () => {
       const subscriptionPath = 'test-subscription';
       const nodeId = 123;
       const content = 'base64content';
       const decodedContent = 'vmess://decoded-server';
       
       mockBaseService.getSubscriptionIdByPath.mockResolvedValue(1);
-      const { safeBase64Decode, NODE_TYPES, extractNodeName } = require('../utils');
-      safeBase64Decode.mockReturnValue(decodedContent);
+      const { tryDecodeNodeContent, extractNodeName, getNodeType } = require('../utils');
+      tryDecodeNodeContent.mockReturnValue(decodedContent);
       extractNodeName.mockReturnValue('DecodedNode');
+      getNodeType.mockReturnValue('vmess');
       dbRun.mockResolvedValue();
 
       await nodeService.updateNode(subscriptionPath, nodeId, content);
 
-      expect(safeBase64Decode).toHaveBeenCalledWith(content);
+      expect(tryDecodeNodeContent).toHaveBeenCalledWith(content);
+      expect(dbRun).toHaveBeenCalledWith(
+        'UPDATE nodes SET original_link = ?, name = ?, type = ? WHERE id = ? AND subscription_id = ?',
+        [decodedContent, 'DecodedNode', 'vmess', nodeId, 1]
+      );
     });
 
-    it('should handle decode errors gracefully', async () => {
+    it('should continue when decoded content is unchanged', async () => {
       const subscriptionPath = 'test-subscription';
       const nodeId = 123;
       const content = 'invalid-base64';
       
       mockBaseService.getSubscriptionIdByPath.mockResolvedValue(1);
-      const { safeBase64Decode } = require('../utils');
-      safeBase64Decode.mockImplementation(() => {
-        throw new Error('Invalid base64');
-      });
+      const { tryDecodeNodeContent, getNodeType } = require('../utils');
+      tryDecodeNodeContent.mockReturnValue(content);
+      getNodeType.mockReturnValue('ss');
       dbRun.mockResolvedValue();
 
       await nodeService.updateNode(subscriptionPath, nodeId, content);
 
-      expect(safeBase64Decode).toHaveBeenCalled();
+      expect(tryDecodeNodeContent).toHaveBeenCalledWith(content);
       expect(dbRun).toHaveBeenCalled();
     });
   });

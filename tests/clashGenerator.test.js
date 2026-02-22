@@ -2,24 +2,51 @@
  * Clash 配置生成器测试
  */
 
+const { EventEmitter } = require('events');
+const https = require('https');
 const { generateClashConfig, validateAndLoadTemplate } = require('../utils/converters/clashConfigGenerator');
 
+jest.mock('https', () => ({
+  request: jest.fn()
+}));
+
+function mockHttpsRequest({ statusCode = 200, body = '' }) {
+  https.request.mockImplementation((options, callback) => {
+    const res = new EventEmitter();
+    res.statusCode = statusCode;
+
+    process.nextTick(() => {
+      callback(res);
+      if (body) {
+        res.emit('data', Buffer.from(body));
+      }
+      res.emit('end');
+    });
+
+    return {
+      on: jest.fn(),
+      setTimeout: jest.fn(),
+      destroy: jest.fn(),
+      end: jest.fn()
+    };
+  });
+}
+
 describe('Clash Config Generator', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('validateAndLoadTemplate', () => {
     it('应该能够加载模板内容', async () => {
-      // 注意：这个测试需要实际的模板 URL
-      // 在实际运行时，请替换为有效的模板 URL
-      const templateUrl = 'https://raw.githubusercontent.com/tindy2013/subconverter/master/config/config_base.ini';
+      const templateUrl = 'https://example.com/template.yml';
+      mockHttpsRequest({ statusCode: 200, body: 'template content' });
 
-      try {
-        const result = await validateAndLoadTemplate(templateUrl);
-        expect(result).toBeDefined();
-        expect(result.content).toBeDefined();
-        expect(result.length).toBeGreaterThan(0);
-        expect(typeof result.content).toBe('string');
-      } catch (error) {
-        console.log('模板加载测试失败（可能是网络问题）:', error.message);
-      }
+      const result = await validateAndLoadTemplate(templateUrl);
+
+      expect(result).toBeDefined();
+      expect(result.content).toBe('template content');
+      expect(result.length).toBe('template content'.length);
     });
 
     it('应该拒绝无效的 URL', async () => {
@@ -31,18 +58,14 @@ describe('Clash Config Generator', () => {
 
   describe('generateClashConfig', () => {
     it('应该能够生成 Clash 配置', async () => {
-      // 注意：这个测试需要实际的 Subconvert API URL
-      // 在实际运行时，请替换为有效的 Subconvert API URL
-      const subconvertApiUrl = 'https://sub.xeton.dev/sub?target=clash&emoji=true&url=https://example.com';
+      const subconvertApiUrl = 'https://subconvert.example.com/sub';
+      mockHttpsRequest({ statusCode: 200, body: 'clash config content' });
 
-      try {
-        const config = await generateClashConfig(subconvertApiUrl);
-        expect(config).toBeDefined();
-        expect(typeof config).toBe('string');
-        expect(config.length).toBeGreaterThan(0);
-      } catch (error) {
-        console.log('配置生成测试失败（可能是网络问题）:', error.message);
-      }
+      const config = await generateClashConfig(subconvertApiUrl);
+
+      expect(config).toBeDefined();
+      expect(typeof config).toBe('string');
+      expect(config).toBe('clash config content');
     });
 
     it('应该拒绝无效的 Subconvert API URL', async () => {

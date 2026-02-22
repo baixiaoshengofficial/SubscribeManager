@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>协议说明</title>
+    <title data-i18n="config.page_title">协议说明</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
     <style>
         * {
             margin: 0;
@@ -11,47 +14,80 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f7;
-            color: #1d1d1f;
+        :root {
+            --page-bg: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --border-color: #e5e5e7;
+            --accent-bg: #f9f9f9;
+            --supported-bg: #d4edda;
+            --supported-text: #155724;
+            --not-supported-bg: #f8d7da;
+            --not-supported-text: #721c24;
+            --navbar-bg: rgba(255, 255, 255, 0.92);
+            --hover-bg: rgba(29, 29, 31, 0.08);
         }
 
-        .container {
+        body[data-theme="dark"] {
+            --page-bg: #0f1213;
+            --card-bg: #1c2123;
+            --text-primary: #f2ede4;
+            --text-secondary: #c9c0b5;
+            --border-color: #2b3235;
+            --accent-bg: #15191a;
+            --supported-bg: rgba(123, 181, 139, 0.2);
+            --supported-text: #7bb58b;
+            --not-supported-bg: rgba(224, 122, 115, 0.2);
+            --not-supported-text: #e07a73;
+            --navbar-bg: rgba(20, 24, 25, 0.92);
+            --hover-bg: rgba(242, 237, 228, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--page-bg);
+            color: var(--text-primary);
+        }
+
+
+        .page-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
 
         header {
-            background: #ffffff;
+            background: var(--card-bg);
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 30px;
             border-radius: 12px;
             padding: 20px;
+            border: 1px solid var(--border-color);
         }
 
         h1 {
-            color: #1d1d1f;
+            color: var(--text-primary);
             font-size: 28px;
             margin-bottom: 10px;
         }
 
         .subtitle {
-            color: #6e6e73;
+            color: var(--text-secondary);
             font-size: 16px;
         }
 
         .card {
-            background: #ffffff;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
         }
 
         h2 {
-            color: #1d1d1f;
+            color: var(--text-primary);
             font-size: 22px;
             margin-bottom: 20px;
         }
@@ -63,20 +99,23 @@
         }
 
         .client-card {
-            background: #f9f9f9;
+            background: var(--accent-bg);
             border-radius: 10px;
             padding: 20px;
-            border: 1px solid #e5e5e7;
+            border: 1px solid var(--border-color);
+            overflow-wrap: anywhere;
         }
 
         .client-name {
             font-size: 18px;
             font-weight: 600;
-            color: #1d1d1f;
+            color: var(--text-primary);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
+            overflow-wrap: anywhere;
         }
 
         .client-icon {
@@ -89,6 +128,7 @@
             font-size: 12px;
             font-weight: 700;
             color: #ffffff;
+            flex-shrink: 0;
         }
 
         .clash-icon { background: #7d4cdb; }
@@ -99,83 +139,120 @@
         .info-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 8px;
             font-size: 14px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .info-label {
-            color: #6e6e73;
+            color: var(--text-secondary);
+            flex: 0 0 auto;
         }
 
         .info-value {
-            color: #1d1d1f;
+            color: var(--text-primary);
             font-weight: 500;
+            min-width: 0;
+            flex: 1 1 0;
+            text-align: right;
+            overflow-wrap: anywhere;
         }
 
         .protocol-list {
             margin-top: 12px;
             padding-top: 12px;
-            border-top: 1px solid #e5e5e7;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .protocol-list strong {
+            margin-right: 4px;
         }
 
         .protocol-item {
-            display: inline-block;
-            background: #e5e5e7;
-            color: #1d1d1f;
+            display: inline-flex;
+            align-items: center;
+            background: var(--border-color);
+            color: var(--text-primary);
             padding: 4px 8px;
             border-radius: 6px;
             font-size: 12px;
-            margin: 2px 4px 2px 0;
+            margin: 0;
+            white-space: nowrap;
         }
 
         .protocol-item.supported {
-            background: #d4edda;
-            color: #155724;
+            background: var(--supported-bg);
+            color: var(--supported-text);
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .matrix-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            min-width: 520px;
         }
 
         .matrix-table th,
         .matrix-table td {
             text-align: center;
             padding: 12px;
-            border: 1px solid #e5e5e7;
+            border: 1px solid var(--border-color);
+            overflow-wrap: anywhere;
         }
 
         .matrix-table th {
-            background: #f5f5f7;
+            background: var(--page-bg);
             font-weight: 600;
-            color: #1d1d1f;
+            color: var(--text-primary);
         }
 
         .matrix-table tr:nth-child(even) {
-            background: #f9f9f9;
+            background: var(--accent-bg);
         }
 
         .supported {
-            background: #d4edda;
-            color: #155724;
+            background: var(--supported-bg);
+            color: var(--supported-text);
         }
 
         .not-supported {
-            background: #f8d7da;
-            color: #721c24;
+            background: var(--not-supported-bg);
+            color: var(--not-supported-text);
         }
 
         .description {
-            color: #6e6e73;
+            color: var(--text-secondary);
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 20px;
+            overflow-wrap: anywhere;
         }
 
         @media (max-width: 768px) {
-            .container {
+            .navbar .container {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .navbar-user {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .page-container {
                 padding: 0 1rem;
             }
 
@@ -187,6 +264,15 @@
             .client-card {
                 padding: 1rem;
                 border-radius: 0.75rem;
+            }
+
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .info-value {
+                text-align: left;
             }
 
             .client-icon {
@@ -267,7 +353,7 @@
         }
 
         @media (max-width: 480px) {
-            .container {
+            .page-container {
                 padding: 0 0.75rem;
             }
 
@@ -415,7 +501,7 @@
         }
 
         @media (min-width: 1400px) {
-            .container {
+            .page-container {
                 max-width: 1200px;
             }
 
@@ -476,18 +562,39 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <nav class="navbar navbar-expand navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand" href="/admin" data-admin-link>
+                <i class="fas fa-cube"></i>
+                <span data-i18n="navbar.brand">Subscribe-Manager</span>
+            </a>
+            <div class="navbar-user ms-auto d-flex align-items-center">
+                <a class="nav-link me-3" href="/admin" data-admin-link>
+                    <i class="fas fa-th-large me-1"></i>
+                    <span data-i18n="navbar.console">控制台</span>
+                </a>
+                <div class="btn-group me-3">
+                    <button class="btn btn-sm btn-outline-secondary lang-select-btn" data-set-lang="zh-CN" data-i18n="lang.zh">简体中文</button>
+                    <button class="btn btn-sm btn-outline-secondary lang-select-btn" data-set-lang="en" data-i18n="lang.en">English</button>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary theme-toggle" id="themeToggle" type="button" data-i18n-title="theme.to_dark">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="page-container">
         <header>
-            <h1>协议说明</h1>
-            <div class="subtitle">
+            <h1 data-i18n="config.title">协议说明</h1>
+            <div class="subtitle" data-i18n="config.subtitle">
                 展示各客户端对不同代理协议的支持情况，帮助您选择合适的客户端配置
             </div>
         </header>
 
         <!-- 协议支持概览 -->
         <div class="card">
-            <h2>协议支持概览</h2>
-            <div class="description">
+            <h2 data-i18n="config.overview_title">协议支持概览</h2>
+            <div class="description" data-i18n="config.overview_desc">
                 以下是目前各客户端支持的协议类型概览。不同的客户端因其设计目标和技术实现，对协议的支持程度各不相同。
             </div>
             <div class="client-grid" id="clientGrid">
@@ -497,28 +604,94 @@
 
         <!-- 协议支持矩阵 -->
         <div class="card">
-            <h2>协议支持矩阵</h2>
-            <div class="description">
+            <h2 data-i18n="config.matrix_title">协议支持矩阵</h2>
+            <div class="description" data-i18n="config.matrix_desc">
                 详细展示了每种协议在不同客户端中的支持情况。✓ 表示该客户端支持该协议，✗ 表示不支持。
             </div>
-            <table class="matrix-table" id="matrixTable">
-                <thead>
-                    <tr>
-                        <th>协议</th>
-                        <th>Clash</th>
-                        <th>Surge</th>
-                        <th>Shadowsocks</th>
-                        <th>Universal</th>
-                    </tr>
-                </thead>
-                <tbody id="matrixBody">
-                    <tr><td colspan="5" style="text-align: center;"><div class="loading"></div></td></tr>
-                </tbody>
-            </table>
+            <div class="table-wrap">
+                <table class="matrix-table" id="matrixTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="config.table.protocol">协议</th>
+                            <th data-i18n="clients.clash">Clash</th>
+                            <th data-i18n="clients.surge">Surge</th>
+                            <th data-i18n="clients.shadowsocks">Shadowsocks</th>
+                            <th data-i18n="clients.universal">Universal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrixBody">
+                        <tr><td colspan="5" style="text-align: center;"><div class="loading"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <script src="/js/i18n.js"></script>
     <script>
+        const THEME_KEY = 'preferredTheme';
+        const _t = (k, params) => (window.i18n && window.i18n.t(k, params)) || k;
+        let adminPath = 'admin';
+
+        function getSystemTheme() {
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+        }
+
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            const toggle = document.getElementById('themeToggle');
+            const icon = toggle ? toggle.querySelector('i') : null;
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+            if (toggle) {
+                toggle.setAttribute('title', theme === 'dark' ? _t('theme.to_light') : _t('theme.to_dark'));
+            }
+        }
+
+        function initTheme() {
+            const stored = localStorage.getItem(THEME_KEY);
+            const theme = stored || getSystemTheme();
+            applyTheme(theme);
+
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                toggle.addEventListener('click', () => {
+                    const nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    localStorage.setItem(THEME_KEY, nextTheme);
+                    applyTheme(nextTheme);
+                });
+            }
+        }
+
+        function bootstrapI18n() {
+            if (window.i18n && window.i18n.init) {
+                return window.i18n.init();
+            }
+            return Promise.resolve();
+        }
+
+        async function resolveAdminPath() {
+            try {
+                const response = await fetch('/config');
+                if (response.ok) {
+                    const config = await response.json();
+                    adminPath = config.ADMIN_PATH || 'admin';
+                }
+            } catch (_) {
+                adminPath = 'admin';
+            }
+            updateAdminLinks();
+        }
+
+        function updateAdminLinks() {
+            document.querySelectorAll('[data-admin-link]').forEach(link => {
+                link.setAttribute('href', `/${adminPath}`);
+            });
+        }
+
         // 简化的客户端支持配置
         const CLIENT_PROTOCOL_SUPPORT = {
             clash: ['ss://', 'ssr://', 'vmess://', 'vless://', 'trojan://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://'],
@@ -529,26 +702,26 @@
 
         const CLIENT_INFO = {
             clash: {
-                name: 'Clash',
-                description: '功能强大的代理工具，支持规则分流',
+                nameKey: 'clients.clash',
+                descriptionKey: 'config.clients.clash_desc',
                 icon: 'C',
                 iconClass: 'clash-icon'
             },
             surge: {
-                name: 'Surge',
-                description: 'iOS/macOS 平台专业网络调试工具',
+                nameKey: 'clients.surge',
+                descriptionKey: 'config.clients.surge_desc',
                 icon: 'S',
                 iconClass: 'surge-icon'
             },
             shadowsocks: {
-                name: 'Shadowsocks',
-                description: '轻量级代理协议专用客户端',
+                nameKey: 'clients.shadowsocks',
+                descriptionKey: 'config.clients.shadowsocks_desc',
                 icon: 'SS',
                 iconClass: 'shadowsocks-icon'
             },
             universal: {
-                name: 'Universal',
-                description: '通用客户端，支持所有主流协议',
+                nameKey: 'clients.universal',
+                descriptionKey: 'config.clients.universal_desc',
                 icon: 'U',
                 iconClass: 'universal-icon'
             }
@@ -586,18 +759,18 @@
                 card.innerHTML = `
                     <div class="client-name">
                         <div class="client-icon ${info.iconClass}">${info.icon}</div>
-                        ${info.name}
+                        ${_t(info.nameKey)}
                     </div>
                     <div class="info-row">
-                        <span class="info-label">描述:</span>
-                        <span class="info-value">${info.description}</span>
+                        <span class="info-label">${_t('config.labels.description')}</span>
+                        <span class="info-value">${_t(info.descriptionKey)}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">支持协议数:</span>
-                        <span class="info-value">${protocols.length} 种</span>
+                        <span class="info-label">${_t('config.labels.supported_count')}</span>
+                        <span class="info-value">${protocols.length}${_t('config.labels.count_unit')}</span>
                     </div>
                     <div class="protocol-list">
-                        <strong>支持的协议:</strong><br>
+                        <strong>${_t('config.labels.supported_protocols')}</strong><br>
                         ${protocols.map(protocol => 
                             `<span class="protocol-item supported">${protocol.replace('://', '')}</span>`
                         ).join('')}
@@ -633,15 +806,24 @@
 
         // 格式化支持信息
         function formatSupport(isSupported) {
-            return isSupported ? '✓ 支持' : '✗ 不支持';
+            return isSupported ? _t('config.supported') : _t('config.not_supported');
         }
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', () => {
+            bootstrapI18n().then(() => {
+                initTheme();
+                resolveAdminPath();
+                renderOverview();
+                renderMatrix(getProtocolMatrix());
+            });
+        });
+
+        document.addEventListener('i18n:changed', () => {
             renderOverview();
-            
-            const matrix = getProtocolMatrix();
-            renderMatrix(matrix);
+            renderMatrix(getProtocolMatrix());
+            const currentTheme = document.body.getAttribute('data-theme') || getSystemTheme();
+            applyTheme(currentTheme);
         });
     </script>
 </body>

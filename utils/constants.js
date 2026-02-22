@@ -6,15 +6,15 @@ const NODE_TYPES = {
   VMESS: 'vmess://',
   VLESS: 'vless://',
   TROJAN: 'trojan://',
-  HYTESE: 'hysteria://',
-  HYTESE2: 'hysteria2://',
+  HYSTERIA: 'hysteria://',
+  HYSTERIA2: 'hysteria2://',
   TUIC: 'tuic://',
   SOCKS: 'socks://',
   SOCKS5: 'socks5://',
   SOCKS4: 'socks4://',
   HTTP: 'http://',
   HTTPS: 'https://',
-  SNELL: 'snell://',
+  SNELL: 'snell,',
   WIREGUARD: 'wireguard://'
 };
 

@@ -13,6 +13,8 @@
     "close": "Close",
     "confirm": "Confirm",
     "copied": "Copied to clipboard",
+    "copy": "Copy",
+    "import": "Import",
     "copy_failed": "Copy failed",
     "network_error": "Network error, please try again",
     "error_prefix": "Error: "
@@ -20,7 +22,39 @@
   "navbar": {
     "brand": "Subscribe-Manager",
     "config_manager": "Protocol Guide",
+    "console": "Console",
     "logout": "Logout"
+  },
+  "admin": {
+    "eyebrow": "Admin Panel",
+    "title": "Subscriptions & Nodes Console",
+    "subtitle": "Manage subscriptions and nodes in one place. make it easy and simple."
+  },
+  "config": {
+    "page_title": "Protocol Guide",
+    "title": "Protocol Guide",
+    "subtitle": "Overview of protocol support across clients to help you choose the right configuration.",
+    "overview_title": "Protocol Support Overview",
+    "overview_desc": "Below is a summary of protocol support across clients. Capabilities vary by client and implementation.",
+    "matrix_title": "Protocol Support Matrix",
+    "matrix_desc": "Detailed support status for each protocol. ✓ means supported; ✗ means not supported.",
+    "supported": "✓ Supported",
+    "not_supported": "✗ Not supported",
+    "table": {
+      "protocol": "Protocol"
+    },
+    "labels": {
+      "description": "Description:",
+      "supported_count": "Protocols supported:",
+      "count_unit": "",
+      "supported_protocols": "Supported protocols:"
+    },
+    "clients": {
+      "clash_desc": "Powerful proxy tool with rule-based routing",
+      "surge_desc": "Professional network debugging tool for iOS/macOS",
+      "shadowsocks_desc": "Lightweight client for Shadowsocks",
+      "universal_desc": "Universal client supporting mainstream protocols"
+    }
   },
   "login": {
     "page_title": "SubscribeManager - Login",
@@ -44,10 +78,16 @@
     "remove": "Delete",
     "select_all": "Select All",
     "unselect": "Unselect",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "open_universal": "Open universal link",
+    "open_v2ray": "Open V2Ray link",
+    "open_surge": "Open Surge link",
+    "open_clash": "Open Clash link",
+    "open_shadowsocks": "Open Shadowsocks link"
   },
   "subscription": {
     "add_title": "Add New Subscription",
+    "edit_info": "Edit subscription",
     "name_label": "Subscription Name",
     "path_label": "Subscription Path",
     "path_help": "Path can include lowercase letters, numbers and hyphens, 5-50 chars",
@@ -90,6 +130,9 @@
   "nodes": {
     "title": "Nodes",
     "content_label": "Node Content",
+    "count_label": "Nodes",
+    "view_table": "Table view",
+    "view_card": "Card view",
     "content_required": "Missing node content",
     "unsupported_format": "Unsupported node format",
     "invalid_enabled": "Invalid enabled value",
@@ -129,6 +172,13 @@
     "url_required": "Please enter subscription URL",
     "invalid_url": "Invalid subscription URL format"
   },
+  "clients": {
+    "universal": "Universal",
+    "v2ray": "V2Ray",
+    "surge": "Surge",
+    "clash": "Clash",
+    "shadowsocks": "SS"
+  },
   "subconverter": {
     "title": "Configure Subconverter",
     "subconvert_url": "Subconverter API URL",
@@ -165,6 +215,10 @@
     "label": "Language",
     "en": "English",
     "zh": "简体中文"
+  },
+  "theme": {
+    "to_light": "Switch to light",
+    "to_dark": "Switch to dark"
   }
 }
 

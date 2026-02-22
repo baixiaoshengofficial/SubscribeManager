@@ -8,7 +8,7 @@ const {
 describe('Node Validators', () => {
   describe('extractNodeName', () => {
     it('should extract name from vmess link', () => {
-      const vmessLink = 'vmess://eyJ2IjoiV...', 'name': 'TestVMess'}';
+      const vmessLink = 'vmess://eyJwcyI6IlRlc3RWTWVzcyJ9';
       const result = extractNodeName(vmessLink);
       expect(result).toBe('TestVMess');
     });
@@ -124,11 +124,11 @@ describe('Node Validators', () => {
 
   describe('NODE_TYPES constant', () => {
     it('should have all required node types', () => {
-      expect(NODE_TYPES).toHaveProperty('VMess', 'vmess://');
+      expect(NODE_TYPES).toHaveProperty('VMESS', 'vmess://');
       expect(NODE_TYPES).toHaveProperty('SS', 'ss://');
       expect(NODE_TYPES).toHaveProperty('VLESS', 'vless://');
-      expect(NODE_TYPES).toHaveProperty('Trojan', 'trojan://');
-      expect(NODE_TYPES).toHaveProperty('Hysteria2', 'hysteria2://');
+      expect(NODE_TYPES).toHaveProperty('TROJAN', 'trojan://');
+      expect(NODE_TYPES).toHaveProperty('HYSTERIA2', 'hysteria2://');
       expect(NODE_TYPES).toHaveProperty('TUIC', 'tuic://');
       expect(NODE_TYPES).toHaveProperty('SNELL', 'snell,');
     });

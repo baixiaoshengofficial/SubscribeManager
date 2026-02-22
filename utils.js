@@ -12,16 +12,28 @@ const constants = require('./utils/constants');
 function filterSnellNodes(content) {
   if (!content?.trim()) return '';
 
-  return content
-    .split(/\r?\n/)
-    .filter(line => {
-      const trimmedLine = line.trim();
-      if (!trimmedLine) return false;
+  const linesWithEndings = content.match(/[^\n]*\n|[^\n]+$/g) || [];
+  const keptLines = [];
 
-      // 过滤掉snell节点
-      return !trimmedLine.includes('snell://');
-    })
-    .join('\n');
+  linesWithEndings.forEach(lineWithEnding => {
+    const newlineMatch = lineWithEnding.match(/\r?\n$/);
+    const newline = newlineMatch ? newlineMatch[0] : '';
+    const lineContent = lineWithEnding.replace(/\r?\n$/, '');
+    const trimmedLine = lineContent.trim();
+
+    if (!trimmedLine) {
+      return;
+    }
+
+    const lowerLine = trimmedLine.toLowerCase();
+    const isSnell = lowerLine.includes('snell://') || (lowerLine.includes('snell,') && lowerLine.includes('='));
+
+    if (!isSnell) {
+      keptLines.push(trimmedLine + newline);
+    }
+  });
+
+  return keptLines.join('');
 }
 
 // ===== 模块导出 =====

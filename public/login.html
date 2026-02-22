@@ -7,73 +7,184 @@
   <title data-i18n="login.page_title">SubscribeManager - 登录</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <style>
+    :root {
+      --primary-color: #2f6f6d;
+      --primary-dark: #255a58;
+      --page-bg: #f7f4ef;
+      --card-bg: #fffcf7;
+      --text-primary: #1e1b16;
+      --text-secondary: #4b453d;
+      --text-muted: #7a7268;
+      --border-color: #e7ddd0;
+      --shadow-md: 0 10px 24px rgba(30, 27, 22, 0.12);
+      --shadow-lg: 0 18px 40px rgba(30, 27, 22, 0.16);
+      --font-family: 'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', sans-serif;
+      --font-display: 'Fraunces', 'Noto Serif SC', serif;
+      --hero-gradient: linear-gradient(120deg, rgba(47, 111, 109, 0.16), rgba(166, 124, 82, 0.2));
+    }
+
+    body[data-theme="dark"] {
+      --page-bg: #0f1213;
+      --card-bg: #1c2123;
+      --text-primary: #f2ede4;
+      --text-secondary: #c9c0b5;
+      --text-muted: #8f877e;
+      --border-color: #2b3235;
+      --primary-color: #8bc6c3;
+      --primary-dark: #72a9a6;
+      --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.55);
+      --hero-gradient: linear-gradient(120deg, rgba(47, 111, 109, 0.35), rgba(166, 124, 82, 0.25));
+    }
+
     body {
-      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: var(--font-family);
+      background: var(--page-bg);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--text-primary);
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: -20% -10% auto -10%;
+      height: 55vh;
+      background: var(--hero-gradient);
+      transform: skewY(-6deg);
+      z-index: -1;
     }
 
     .login-container {
-      background-color: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
       overflow: hidden;
-      width: 360px;
-      max-width: 90%;
+      width: 380px;
+      max-width: 92%;
+      border: 1px solid var(--border-color);
     }
 
     .login-header {
-      background: linear-gradient(120deg, #4e73df, #224abe);
-      padding: 2rem 1.5rem;
+      padding: 2rem 2rem 1.5rem;
       text-align: center;
-      color: white;
+      color: var(--text-primary);
+      background: transparent;
     }
 
     .login-icon {
-      background-color: white;
-      color: #4e73df;
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: rgba(47, 111, 109, 0.12);
+      color: var(--primary-color);
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 1rem;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-md);
     }
 
     .login-icon i {
-      font-size: 2.5rem;
+      font-size: 2.1rem;
     }
 
     .login-title {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      font-family: var(--font-display);
+      letter-spacing: 0.02em;
     }
 
     .login-subtitle {
-      opacity: 0.8;
-      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 0;
     }
 
     .login-form {
-      padding: 2rem;
+      padding: 1.5rem 2rem 2rem;
     }
 
     .form-floating {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .form-control {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 12px;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 0.2rem rgba(47, 111, 109, 0.2);
+      border-color: var(--primary-color);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+
+    label {
+      color: var(--text-secondary);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      background: var(--primary-color);
+      border: none;
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-login:hover {
+      background: var(--primary-dark);
     }
 
     .alert {
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 0.9rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       display: none;
+    }
+
+    .top-controls {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .theme-toggle {
+      border-radius: 999px;
+      min-width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        width: 94%;
+      }
+
+      .login-form {
+        padding: 1.25rem 1.5rem 1.75rem;
+      }
     }
   </style>
 </head>
@@ -114,16 +225,57 @@
     </div>
   </div>
 
-  <div class="position-fixed" style="top: 12px; right: 12px;">
+  <div class="top-controls">
     <div class="btn-group">
-      <button class="btn btn-sm btn-outline-secondary lang-select-btn" data-set-lang="zh-CN">中文</button>
-      <button class="btn btn-sm btn-outline-secondary lang-select-btn" data-set-lang="en">EN</button>
+      <button class="btn btn-sm btn-outline-secondary lang-select-btn" data-set-lang="zh-CN" data-i18n="lang.zh">简体中文</button>
+      <button class="btn btn-sm btn-outline-secondary lang-select-btn" data-set-lang="en" data-i18n="lang.en">English</button>
     </div>
+    <button class="btn btn-sm btn-outline-secondary theme-toggle" id="themeToggle" type="button" data-i18n-title="theme.to_dark">
+      <i class="fas fa-moon"></i>
+    </button>
   </div>
 
   <script src="/js/i18n.js"></script>
   <script>
-    window.i18n && window.i18n.init();
+    const THEME_KEY = 'preferredTheme';
+    const _t = (k, params) => (window.i18n && window.i18n.t(k, params)) || k;
+
+    function getSystemTheme() {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+
+    function applyTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      const toggle = document.getElementById('themeToggle');
+      const icon = toggle ? toggle.querySelector('i') : null;
+      if (icon) {
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+      }
+      if (toggle) {
+        toggle.setAttribute('title', theme === 'dark' ? _t('theme.to_light') : _t('theme.to_dark'));
+      }
+    }
+
+    function initTheme() {
+      const stored = localStorage.getItem(THEME_KEY);
+      const theme = stored || getSystemTheme();
+      applyTheme(theme);
+
+      const toggle = document.getElementById('themeToggle');
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          const nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          localStorage.setItem(THEME_KEY, nextTheme);
+          applyTheme(nextTheme);
+        });
+      }
+    }
+
+    window.i18n && window.i18n.init && window.i18n.init();
+    initTheme();
+
     // 默认值
     let ADMIN_PATH = 'admin';
 
@@ -131,7 +283,7 @@
     fetch('/config')
       .then(res => res.json())
       .then(data => {
-        ADMIN_PATH = data.ADMIN_PATH;
+        ADMIN_PATH = data.ADMIN_PATH || ADMIN_PATH;
 
         // 登录表单事件绑定
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
@@ -149,17 +301,17 @@
             if (data.success) {
               window.location.href = data.redirect;
             } else {
-              document.getElementById('alertMessage').textContent = data.message || '用户名或密码错误';
+              document.getElementById('alertMessage').textContent = data.message || _t('login.error');
               document.getElementById('loginAlert').style.display = 'block';
             }
           } catch (err) {
-            document.getElementById('alertMessage').textContent = '登录请求失败，请重试';
+            document.getElementById('alertMessage').textContent = _t('login.request_error');
             document.getElementById('loginAlert').style.display = 'block';
           }
         });
       })
       .catch(err => {
-        console.error('获取配置失败', err);
+        console.error(_t('common.network_error'), err);
       });
 
   </script>

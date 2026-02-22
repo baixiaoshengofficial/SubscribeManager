@@ -7,13 +7,16 @@ const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
 
   // Session configuration
-  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+  sessionSecret: process.env.SESSION_SECRET || 'subscribe-manager-secret-key-change-in-production',
 
   // Admin path
   adminPath: process.env.ADMIN_PATH || 'admin',
 
   // Database path
-  dbPath: process.env.DB_PATH || path.resolve(__dirname, '../data/subscriptions.db'),
+  databasePath: process.env.DB_PATH || path.resolve(__dirname, '../data/subscriptions.db'),
+
+  // Subscription defaults
+  defaultSubscriptionName: process.env.DEFAULT_SUBSCRIPTION_NAME || '默认订阅',
 
   // Credentials
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
@@ -21,6 +24,12 @@ const config = {
 
   // Language
   defaultLanguage: process.env.DEFAULT_LANGUAGE || 'zh-CN',
+
+  // Security
+  corsOptions: {
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+  },
 };
 
 module.exports = config;

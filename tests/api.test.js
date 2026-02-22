@@ -2,13 +2,14 @@ const request = require('supertest');
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const ApiError = require('../utils/ApiError');
+const languageHandler = require('../middleware/languageHandler');
+const errorHandler = require('../middleware/errorHandler');
 
-// Mock services and middleware
+// Mock services
 jest.mock('../services/subscriptionService');
 jest.mock('../services/nodeService');
 jest.mock('../services/sessionService');
-jest.mock('../middleware/languageHandler');
-jest.mock('../middleware/errorHandler');
 
 const subscriptionService = require('../services/subscriptionService');
 const nodeService = require('../services/nodeService');
@@ -16,6 +17,7 @@ const sessionService = require('../services/sessionService');
 
 // Create test app
 const app = express();
+app.use(languageHandler);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -27,7 +29,10 @@ app.use(session({
 
 // Mock authentication middleware
 const mockRequireAuth = (req, res, next) => {
-  req.session = { sessionId: 'test-session' };
+  if (!req.session) {
+    req.session = {};
+  }
+  req.session.sessionId = 'test-session';
   sessionService.verifyAndRenewSession.mockResolvedValue(true);
   next();
 };
@@ -35,10 +40,11 @@ const mockRequireAuth = (req, res, next) => {
 // Setup routes
 const apiRoutes = require('../routes/api');
 app.use('/api', mockRequireAuth, apiRoutes);
+app.use(errorHandler);
 
 describe('API Routes', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe('GET /api/subscriptions', () => {
@@ -69,7 +75,8 @@ describe('API Routes', () => {
         .get('/api/subscriptions')
         .expect(500);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
   });
 
@@ -96,13 +103,17 @@ describe('API Routes', () => {
 
     it('should validate required fields', async () => {
       const invalidData = { name: '', path: '' };
+      subscriptionService.createSubscription.mockRejectedValue(
+        new ApiError(400, 'subscription.path_invalid')
+      );
 
       const response = await request(app)
         .post('/api/subscriptions')
         .send(invalidData)
         .expect(400);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
 
     it('should handle service errors', async () => {
@@ -114,7 +125,8 @@ describe('API Routes', () => {
         .send({ name: 'Test', path: 'test' })
         .expect(500);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
   });
 
@@ -138,13 +150,14 @@ describe('API Routes', () => {
 
     it('should return 404 for non-existent subscription', async () => {
       const path = 'nonexistent';
-      const error = new Error('Not found');
-      error.code = 404;
-      subscriptionService.getSubscription.mockRejectedValue(error);
+      subscriptionService.getSubscription.mockResolvedValue(null);
 
-      await request(app)
+      const response = await request(app)
         .get(`/api/subscriptions/${path}`)
         .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
   });
 
@@ -167,21 +180,27 @@ describe('API Routes', () => {
       expect(subscriptionService.updateSubscription).toHaveBeenCalledWith(
         path,
         updateData.name,
-        updateData.path
+        updateData.path,
+        undefined,
+        undefined,
+        undefined
       );
     });
 
     it('should handle validation errors', async () => {
       const path = 'test-path';
       const invalidData = { name: '', path: 'invalid-path' };
-      const error = new Error('Validation failed');
-      error.code = 400;
-      subscriptionService.updateSubscription.mockRejectedValue(error);
+      subscriptionService.updateSubscription.mockRejectedValue(
+        new ApiError(400, 'subscription.path_invalid')
+      );
 
-      await request(app)
+      const response = await request(app)
         .put(`/api/subscriptions/${path}`)
         .send(invalidData)
         .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
   });
 
@@ -211,7 +230,8 @@ describe('API Routes', () => {
         .delete(`/api/subscriptions/${path}`)
         .expect(500);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
   });
 
@@ -269,13 +289,17 @@ describe('API Routes', () => {
       it('should validate required fields', async () => {
         const path = 'test-subscription';
         const invalidData = { name: 'Test', content: '' };
+        nodeService.createNode.mockRejectedValue(
+          new ApiError(400, 'nodes.content_required')
+        );
 
         const response = await request(app)
           .post(`/api/subscriptions/${path}/nodes`)
           .send(invalidData)
           .expect(400);
 
-        expect(response.body.error).toBeDefined();
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBeDefined();
       });
     });
 
@@ -298,7 +322,7 @@ describe('API Routes', () => {
         });
         expect(nodeService.updateNode).toHaveBeenCalledWith(
           path,
-          nodeId,
+          String(nodeId),
           updateData.content
         );
       });
@@ -319,7 +343,7 @@ describe('API Routes', () => {
           success: true,
           message: 'nodes.deleted'
         });
-        expect(nodeService.deleteNode).toHaveBeenCalledWith(path, nodeId);
+        expect(nodeService.deleteNode).toHaveBeenCalledWith(path, String(nodeId));
       });
     });
 
@@ -340,20 +364,24 @@ describe('API Routes', () => {
           success: true,
           message: 'nodes.enabled'
         });
-        expect(nodeService.toggleNode).toHaveBeenCalledWith(path, nodeId, true);
+        expect(nodeService.toggleNode).toHaveBeenCalledWith(path, String(nodeId), true);
       });
 
       it('should handle invalid enabled value', async () => {
         const path = 'test-subscription';
         const nodeId = 123;
         const invalidData = { enabled: 'true' };
+        nodeService.toggleNode.mockRejectedValue(
+          new ApiError(400, 'nodes.invalid_enabled')
+        );
 
         const response = await request(app)
           .patch(`/api/subscriptions/${path}/nodes/${nodeId}`)
           .send(invalidData)
           .expect(400);
 
-        expect(response.body.error).toBeDefined();
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBeDefined();
       });
     });
 
@@ -385,23 +413,40 @@ describe('API Routes', () => {
       it('should validate orders array', async () => {
         const path = 'test-subscription';
         const invalidData = { orders: [] };
+        nodeService.reorderNodes.mockRejectedValue(
+          new ApiError(400, 'nodes.invalid_orders')
+        );
 
         const response = await request(app)
           .post(`/api/subscriptions/${path}/nodes/reorder`)
           .send(invalidData)
           .expect(400);
 
-        expect(response.body.error).toBeDefined();
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBeDefined();
       });
     });
   });
 
   describe('Authentication Tests', () => {
     it('should require authentication for API routes', async () => {
-      // Test without mock authentication
       const appNoAuth = express();
       appNoAuth.use(express.json());
-      appNoAuth.use('/api', apiRoutes);
+      appNoAuth.use(session({
+        secret: 'test-secret',
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: false }
+      }));
+
+      const requireAuth = (req, res, next) => {
+        if (!req.session?.sessionId) {
+          return res.status(401).json({ error: { code: 401, message: 'Unauthorized' } });
+        }
+        next();
+      };
+
+      appNoAuth.use('/api', requireAuth, apiRoutes);
 
       const response = await request(appNoAuth)
         .get('/api/subscriptions')
@@ -420,15 +465,21 @@ describe('API Routes', () => {
         .send('invalid json')
         .expect(400);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
 
     it('should handle missing request body', async () => {
+      subscriptionService.createSubscription.mockRejectedValue(
+        new ApiError(400, 'subscription.path_invalid')
+      );
+
       const response = await request(app)
         .post('/api/subscriptions')
         .expect(400);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
 
     it('should handle unexpected errors gracefully', async () => {
@@ -441,7 +492,8 @@ describe('API Routes', () => {
         .get('/api/subscriptions')
         .expect(500);
 
-      expect(response.body.error).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
   });
 });

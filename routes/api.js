@@ -14,7 +14,7 @@ router.get('/subscriptions', asyncHandler(async (_req, res) => {
 
 // 创建订阅
 router.post('/subscriptions', asyncHandler(async (req, res) => {
-  const { name, path } = req.body;
+  const { name, path } = req.body || {};
   await subscriptionService.createSubscription(name, path);
   res.json({ success: true, message: 'subscription.created' });
 }));
@@ -34,7 +34,7 @@ router.get('/subscriptions/:path', asyncHandler(async (req, res) => {
 // 更新订阅信息
 router.put('/subscriptions/:path', asyncHandler(async (req, res) => {
   const { path: oldPath } = req.params;
-  const { name, path: newPath, subconvert_url, custom_template, use_default_template } = req.body;
+  const { name, path: newPath, subconvert_url, custom_template, use_default_template } = req.body || {};
   await subscriptionService.updateSubscription(oldPath, name, newPath, subconvert_url, custom_template, use_default_template);
   res.json({ success: true, message: 'subscription.updated' });
 }));
@@ -56,7 +56,7 @@ router.get('/subscriptions/:path/nodes', asyncHandler(async (req, res) => {
 // 创建节点
 router.post('/subscriptions/:path/nodes', asyncHandler(async (req, res) => {
   const { path: subscriptionPath } = req.params;
-  const { name, content, order } = req.body;
+  const { name, content, order } = req.body || {};
   await nodeService.createNode(subscriptionPath, name, content, order);
   res.json({ success: true, message: 'nodes.added' });
 }));
@@ -64,7 +64,7 @@ router.post('/subscriptions/:path/nodes', asyncHandler(async (req, res) => {
 // 更新节点
 router.put('/subscriptions/:path/nodes/:id', asyncHandler(async (req, res) => {
   const { path: subscriptionPath, id: nodeId } = req.params;
-  const { content } = req.body;
+  const { content } = req.body || {};
   await nodeService.updateNode(subscriptionPath, nodeId, content);
   res.json({ success: true, message: 'nodes.edited' });
 }));
@@ -79,7 +79,7 @@ router.delete('/subscriptions/:path/nodes/:id', asyncHandler(async (req, res) =>
 // 切换节点状态
 router.patch('/subscriptions/:path/nodes/:id', asyncHandler(async (req, res) => {
   const { path: subscriptionPath, id: nodeId } = req.params;
-  const { enabled } = req.body;
+  const { enabled } = req.body || {};
   await nodeService.toggleNode(subscriptionPath, nodeId, enabled);
   res.json({ success: true, message: `nodes.${enabled ? 'enabled' : 'disabled'}` });
 }));
@@ -87,7 +87,7 @@ router.patch('/subscriptions/:path/nodes/:id', asyncHandler(async (req, res) => 
 // 节点重新排序
 router.post('/subscriptions/:path/nodes/reorder', asyncHandler(async (req, res) => {
   const { path: subscriptionPath } = req.params;
-  const { orders } = req.body;
+  const { orders } = req.body || {};
   await nodeService.reorderNodes(subscriptionPath, orders);
   res.json({ success: true, message: 'nodes.sort_updated' });
 }));
@@ -95,7 +95,7 @@ router.post('/subscriptions/:path/nodes/reorder', asyncHandler(async (req, res) 
 // 从外部 URL 导入订阅节点
 router.post('/subscriptions/:path/import-nodes', asyncHandler(async (req, res) => {
   const { path: subscriptionPath } = req.params;
-  const { importUrl } = req.body;
+  const { importUrl } = req.body || {};
 
   const result = await importNodes(subscriptionPath, importUrl);
 
@@ -171,7 +171,7 @@ function fetchSubscriptionContent(urlString) {
 const { generateClashConfig, validateAndLoadTemplate } = require('../utils/converters/clashConfigGenerator');
 
 router.post('/clash/generate', asyncHandler(async (req, res) => {
-  const { subconvertUrl, templateUrl } = req.body;
+  const { subconvertUrl, templateUrl } = req.body || {};
 
   // 构建当前订阅 URL（如果有订阅路径）
   let subscriptionUrl = null;
@@ -198,7 +198,7 @@ router.post('/clash/generate', asyncHandler(async (req, res) => {
 
 // 从 URL 加载模板
 router.post('/clash/load-template', asyncHandler(async (req, res) => {
-  const { templateUrl } = req.body;
+  const { templateUrl } = req.body || {};
 
   if (!templateUrl?.trim()) {
     throw new ApiError(400, 'template.url_required');
@@ -214,7 +214,7 @@ router.post('/clash/load-template', asyncHandler(async (req, res) => {
 // 更新订阅的 Subconverter 配置
 router.put('/subscriptions/:path/subconverter', asyncHandler(async (req, res) => {
   const { path } = req.params;
-  const { subconvert_url, custom_template, use_default_template } = req.body;
+  const { subconvert_url, custom_template, use_default_template } = req.body || {};
 
   const subscription = await subscriptionService.getSubscription(path);
   if (!subscription) {
