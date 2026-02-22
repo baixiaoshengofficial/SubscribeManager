@@ -119,6 +119,7 @@ make logs     # View logs
 -   Import Nodes: Select subscription → Select subscription type to import → Enter corresponding subscription link → Auto-import nodes
 -   Generate Custom Clash Link Rules: Select subscription → Configure SubconverterUrl + Custom Rule Template → Click Generate Clash Subscription Nodes
 -   Generate Default Template or Clash Rules with Nodes Only: Select subscription → Check or uncheck Use Default Template → Save → Click Generate Clash Subscription Nodes
+-   **Protocol Guide**: Visit `http://localhost:3000/${ADMIN_PATH}/config-manager` to view protocol support overview and matrix
 -   **Node Sorting**: Node list → Drag → Auto-save
 -   **Bulk Operations**: Bulk delete → Check → Confirm
 
