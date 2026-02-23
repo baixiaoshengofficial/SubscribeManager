@@ -156,9 +156,15 @@ make down # 停止并删除容器
 make logs # 查看日志
 
 ```
+5. 更新方式:
+```
+docker compose pull
+docker compose down
+docker compose up -d
+```
 
 
-5. 访问管理面板: `http://localhost:3000/${ADMIN_PATH}`
+6. 访问管理面板: `http://localhost:3000/${ADMIN_PATH}`
 
 ## 💾 数据库
 

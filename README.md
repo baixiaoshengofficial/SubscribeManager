@@ -104,8 +104,14 @@ make down     # Stop and remove containers
 make logs     # View logs
 ```
 
+5. update:
+```
+docker compose pull
+docker compose down
+docker compose up -d
+```
 
-5. Access the admin panel: `http://localhost:3000/${ADMIN_PATH}`
+6. Access the admin panel: `http://localhost:3000/${ADMIN_PATH}`
 
 ## 💾 Database
 
