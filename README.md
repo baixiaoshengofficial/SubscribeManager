@@ -6,6 +6,14 @@
 
 [SubscribeManager](https://github.com/jokerknight/SubscribeManager) Give it a Star
 
+### Changelog V1.0.1
+
+- Optimized UI, added dark mode, card view for node list, added hover highlights
+- Fixed issue with subscription creation errors
+- Fixed many other bugs
+- Wrote some bugs
+- Coding with Codex or Claude is the way to go, others are trash
+
 ### Changelog V1.0.0
 
 - Support importing nodes via subscription link
