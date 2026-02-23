@@ -23,7 +23,7 @@ Provides an intuitive web interface and supports multiple proxy protocols and su
 
 ## 🌐 Live Demo
 
-[SubscribeManager OnRender](https://subscribemanager.onrender.com/admin)
+[SubscribeManager OnRender](https://subscribemanager-zlj2.onrender.com/admin)
 **username:** `admin`
 **password:** `admin`
 **path:** `admin`

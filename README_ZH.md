@@ -23,7 +23,7 @@ SubscribeManager 是一个轻量级、简单的代理节点订阅管理系统。
 
 ## 🌐 线上体验
 
-[SubscribeManager OnRender](https://subscribemanager.onrender.com/admin)
+[SubscribeManager OnRender](https://subscribemanager-zlj2.onrender.com/admin)
 
 **username:** `admin`
 
