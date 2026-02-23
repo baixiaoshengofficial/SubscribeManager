@@ -220,11 +220,13 @@
             <input type="hidden" name="subscriptionPath" value="">
             <div class="mb-3">
               <label class="form-label" data-i18n="subconverter.subconvert_url">Subconverter API URL</label>
-              <input type="url" class="form-control" name="subconvertUrl" id="subconvertUrl" placeholder="https://api.example.com/sub" oninput="toggleUseDefaultTemplate()">
+              <a href="https://github.com/tindy2013/subconverter" target="_blank" style="font-size: 12px; margin-left: 8px;">项目地址</a>
+              <input type="url" class="form-control" name="subconvertUrl" id="subconvertUrl" placeholder="https://subconverter.example.com" oninput="toggleUseDefaultTemplate()">
               <div class="form-text" data-i18n="subconverter.subconvert_url_hint">用于生成 Clash 配置的 API 地址</div>
             </div>
             <div class="mb-3">
               <label class="form-label" data-i18n="subconverter.custom_template">自定义模板 URL</label>
+              <a href="https://raw.githubusercontent.com/jokerknight/rules/refs/heads/main/baixiaosheng.ini" target="_blank" style="font-size: 12px; margin-left: 8px;">示例</a>
               <input type="url" class="form-control" name="customTemplate" id="customTemplate" placeholder="https://example.com/template.yaml" oninput="toggleUseDefaultTemplate()">
               <div class="form-text" data-i18n="subconverter.custom_template_hint">留空使用默认模板</div>
             </div>
