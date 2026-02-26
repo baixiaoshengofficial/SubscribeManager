@@ -49,10 +49,13 @@ github-release:
 		exit 1; \
 	fi
 
-	# 删除本地和远程已存在的 tag
-	@echo "🏷️  处理 GitHub tag v$(VERSION)..."
-	@git tag -d v$(VERSION) 2>/dev/null || true
-	@gh api repos/:owner/:repo/git/refs/tags/v$(VERSION) -X DELETE 2>/dev/null || true
+	# 删除本地已存在的 tag
+	@echo "🏷️  处理本地 tag v$(VERSION)..."
+	@git tag -d v$(VERSION) 2>/dev/null || echo "本地 tag 不存在"
+
+	# 删除远程已存在的 tag (使用 git push --delete)
+	@echo "🏷️  处理远程 tag v$(VERSION)..."
+	@git push origin :refs/tags/v$(VERSION) 2>/dev/null || echo "远程 tag 不存在"
 
 	# 创建新 tag
 	@echo "创建新 tag v$(VERSION)..."
@@ -65,7 +68,7 @@ github-release:
 
 	# 删除已存在的 Release
 	@echo "🔄 删除旧的 GitHub Release (如果存在)..."
-	@gh release delete v$(VERSION) --yes 2>/dev/null || true
+	@gh release delete v$(VERSION) --yes 2>/dev/null || echo "Release 不存在"
 
 	# 创建新的 Release
 	@echo "✨ 创建新的 GitHub Release..."

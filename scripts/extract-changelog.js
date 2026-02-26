@@ -16,7 +16,8 @@ const changelogPath = './CHANGELOG.md';
 let content = fs.readFileSync(changelogPath, 'utf8');
 
 // 构建正则表达式，匹配指定版本的日志
-const regex = new RegExp(`## \\[${version.replace(/\./g, '\\.')}\\][^\\n]*([\\s\\S]*?)(?=## |$$)`, 's');
+// 匹配格式: ## [1.0.1] - 2026-02-26
+const regex = new RegExp(`## \\[${version.replace(/\./g, '\\.')}\\].*?[\\s\\S]*?(?=## \\[|$$)`, 's');
 const match = content.match(regex);
 
 if (match && match[0]) {
