@@ -6,6 +6,10 @@
 
 [SubscribeManager](https://github.com/jokerknight/SubscribeManager) Give it a Star
 
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=jokerknight/SubscribeManager&type=Date)](https://star-history.com/#jokerknight/SubscribeManager&Date)
+
 ### Changelog V1.0.1
 
 - Optimized UI, added dark mode, card view for node list, added hover highlights

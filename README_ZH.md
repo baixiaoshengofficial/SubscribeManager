@@ -6,6 +6,10 @@
 
 [SubscribeManager](https://github.com/jokerknight/SubscribeManager)动动你的小手给个 Star
 
+### Star 趋势
+
+[![Star History Chart](https://api.star-history.com/svg?repos=jokerknight/SubscribeManager&type=Date)](https://star-history.com/#jokerknight/SubscribeManager&Date)
+
 ### 更新日志V1.0.1
 
 - 优化了UI，新增暗黑模式，节点列表新增卡片模式，增加高亮悬停

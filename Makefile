@@ -4,7 +4,8 @@ PLATFORMS = linux/amd64,linux/arm64
 
 # 从 version.json 读取版本号
 VERSION := $(shell cat version.json | grep '"version"' | head -1 | cut -d '"' -f 4)
-FULL_TAG := v$(VERSION)
+TAG_PREFIX := v
+RELEASE_TAG := $(TAG_PREFIX)$(VERSION)
 
 .PHONY: build push release github-release full-release update-changelog
 
@@ -37,7 +38,7 @@ push:
 
 # 创建 GitHub Release (需要先安装 gh 命令行工具并登录)
 github-release:
-	@echo "🚀 创建 GitHub Release v$(VERSION)..."
+	@echo "🚀 创建 GitHub Release $(RELEASE_TAG)..."
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "❌ 错误: 未安装 gh 命令行工具"; \
 		echo "   请访问 https://cli.github.com/ 安装"; \
@@ -50,20 +51,20 @@ github-release:
 	fi
 
 	# 删除本地已存在的 tag
-	@echo "🏷️  处理本地 tag v$(VERSION)..."
-	@git tag -d v$(VERSION) 2>/dev/null || echo "本地 tag 不存在"
+	@echo "🏷️  处理本地 tag $(RELEASE_TAG)..."
+	@git tag -d $(RELEASE_TAG) 2>/dev/null || echo "本地 tag 不存在"
 
 	# 删除远程已存在的 tag (使用 git push --delete)
-	@echo "🏷️  处理远程 tag v$(VERSION)..."
-	@-git push origin --delete v$(VERSION) 2>/dev/null || echo "远程 tag 不存在"
+	@echo "🏷️  处理远程 tag $(RELEASE_TAG)..."
+	@-git push origin --delete $(RELEASE_TAG) 2>/dev/null || echo "远程 tag 不存在"
 
 	# 创建新 tag
-	@echo "创建新 tag v$(VERSION)..."
-	git tag -a v$(VERSION) -m "Release v$(VERSION)"
+	@echo "创建新 tag $(RELEASE_TAG)..."
+	git tag -a $(RELEASE_TAG) -m "Release $(RELEASE_TAG)"
 
 	# 强制推送 tag (使用完整路径避免代理解析冲突)
-	@echo "推送 tag v$(VERSION)..."
-	git push origin refs/tags/v$(VERSION) --force
+	@echo "推送 tag $(RELEASE_TAG)..."
+	git push origin refs/tags/$(RELEASE_TAG) --force
 
 	# 从 CHANGELOG.md 提取发布说明
 	@echo "📝 从 CHANGELOG.md 提取发布说明..."
@@ -71,14 +72,14 @@ github-release:
 
 	# 删除已存在的 Release
 	@echo "🔄 删除旧的 GitHub Release (如果存在)..."
-	@gh release delete v$(VERSION) --yes 2>/dev/null || echo "Release 不存在"
+	@gh release delete $(RELEASE_TAG) --yes 2>/dev/null || echo "Release 不存在"
 
 	# 创建新的 Release
 	@echo "✨ 创建新的 GitHub Release..."
-	gh release create v$(VERSION) \
-		--title "SubscribeManager v$(VERSION)" \
+	gh release create $(RELEASE_TAG) \
+		--title "SubscribeManager $(RELEASE_TAG)" \
 		--notes-file /tmp/release-notes.txt
-	@echo "✅ GitHub Release v$(VERSION) 创建成功"
+	@echo "✅ GitHub Release $(RELEASE_TAG) 创建成功"
 
 # 更新 CHANGELOG.md 日期
 update-changelog:
@@ -89,8 +90,8 @@ update-changelog:
 release: update-changelog push github-release
 	@echo "🎉 完整发布流程完成！"
 	@echo "   - Docker Hub: $(IMAGE_NAME):$(TAG) 和 $(IMAGE_NAME):$(VERSION)"
-	@echo "   - GitHub Release: v$(VERSION)"
-	@echo "   - Git Tag: v$(VERSION)"
+	@echo "   - GitHub Release: $(RELEASE_TAG)"
+	@echo "   - Git Tag: $(RELEASE_TAG)"
 	@echo "   - CHANGELOG.md 已更新"
 
 # 更新版本号
