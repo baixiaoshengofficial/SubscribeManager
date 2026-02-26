@@ -4,7 +4,7 @@ PLATFORMS = linux/amd64,linux/arm64
 
 # 从 version.json 读取版本号
 VERSION := $(shell cat version.json | grep '"version"' | head -1 | cut -d '"' -f 4)
-TAG_PREFIX := v
+TAG_PREFIX := tag/v
 RELEASE_TAG := $(TAG_PREFIX)$(VERSION)
 
 .PHONY: build push release github-release full-release update-changelog
