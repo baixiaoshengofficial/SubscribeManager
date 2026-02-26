@@ -47,6 +47,7 @@
         <p class="page-eyebrow" data-i18n="admin.eyebrow">管理面板</p>
         <h1 class="page-title" data-i18n="admin.title">订阅与节点控制台</h1>
         <p class="page-subtitle" data-i18n="admin.subtitle">集中管理订阅与节点，新增、复制、导入与批量处理更顺手。</p>
+        <p class="page-version" id="appVersion"></p>
       </div>
       <div class="page-actions">
         <button class="btn btn-primary action-btn" onclick="showAddSubscriptionModal()">
@@ -299,6 +300,25 @@
   <script src="/js/admin-batch.js"></script>
   <script src="/js/admin-subconverter.js"></script>
   <script src="/js/admin-import.js"></script>
+  <script>
+    // 获取并显示版本信息
+    async function loadVersion() {
+      try {
+        const response = await fetch('/version');
+        const data = await response.json();
+        const versionEl = document.getElementById('appVersion');
+        if (versionEl) {
+          versionEl.textContent = `Version: ${data.version}`;
+          versionEl.style.fontSize = '12px';
+          versionEl.style.color = '#6e6e73';
+          versionEl.style.marginTop = '4px';
+        }
+      } catch (error) {
+        console.error('Failed to load version:', error);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadVersion);
+  </script>
 </body>
 
 </html>

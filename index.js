@@ -4,6 +4,7 @@ const path = require("path");
 const app = express();
 const { initializeDatabase } = require("./database");
 const config = require("./config");
+const versionInfo = require("./version.json");
 
 // 使用原有的简单路由
 const apiRoutes = require("./routes/api");
@@ -74,6 +75,15 @@ app.use(
 app.get("/config", (req, res) => {
   res.json({
     ADMIN_PATH: config.adminPath,
+  });
+});
+
+// 版本信息 API
+app.get("/version", (req, res) => {
+  res.json({
+    version: versionInfo.version,
+    name: versionInfo.name,
+    fullTag: `${versionInfo.tagPrefix}${versionInfo.version}`
   });
 });
 
