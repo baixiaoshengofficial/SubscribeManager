@@ -55,12 +55,15 @@ github-release:
 
 	# 删除远程已存在的 tag (使用 git push --delete)
 	@echo "🏷️  处理远程 tag v$(VERSION)..."
-	@git push origin :refs/tags/v$(VERSION) 2>/dev/null || echo "远程 tag 不存在"
+	@-git push origin --delete v$(VERSION) 2>/dev/null || echo "远程 tag 不存在"
 
 	# 创建新 tag
 	@echo "创建新 tag v$(VERSION)..."
 	git tag -a v$(VERSION) -m "Release v$(VERSION)"
-	git push origin v$(VERSION)
+
+	# 强制推送 tag (使用完整路径避免代理解析冲突)
+	@echo "推送 tag v$(VERSION)..."
+	git push origin refs/tags/v$(VERSION) --force
 
 	# 从 CHANGELOG.md 提取发布说明
 	@echo "📝 从 CHANGELOG.md 提取发布说明..."
