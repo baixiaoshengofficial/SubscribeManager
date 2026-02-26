@@ -48,16 +48,27 @@ github-release:
 		echo "   请运行: gh auth login"; \
 		exit 1; \
 	fi
-	@echo "📝 创建 Release v$(VERSION)..."
-	@echo "正在创建/覆盖 GitHub tag v$(VERSION)..."
+
+	# 删除本地和远程已存在的 tag
+	@echo "🏷️  处理 GitHub tag v$(VERSION)..."
 	@git tag -d v$(VERSION) 2>/dev/null || true
-	@git push origin :refs/tags/v$(VERSION) 2>/dev/null || true
+	@gh api repos/:owner/:repo/git/refs/tags/v$(VERSION) -X DELETE 2>/dev/null || true
+
+	# 创建新 tag
+	@echo "创建新 tag v$(VERSION)..."
 	git tag -a v$(VERSION) -m "Release v$(VERSION)"
-	git push origin v$(VERSION) --force
-	@echo "正在从 CHANGELOG.md 提取发布说明..."
-	@node -e "const fs = require('fs'); const content = fs.readFileSync('CHANGELOG.md', 'utf8'); const version = '$(VERSION)'; const regex = new RegExp('## \\[' + version.replace(/\./g, '\\\\.') + '\\][^\\n]*([\\s\\S]*?)(?=## |$$)'); const match = content.match(regex); if (match) { console.log(match[0]); } else { console.log('### 🎉 版本 v' + version + ' 发布\\n\\n详细更新日志请查看 CHANGELOG.md'); }" > /tmp/release-notes.txt
-	@echo "正在创建/覆盖 GitHub Release..."
+	git push origin v$(VERSION)
+
+	# 从 CHANGELOG.md 提取发布说明
+	@echo "📝 从 CHANGELOG.md 提取发布说明..."
+	@node scripts/extract-changelog.js $(VERSION) > /tmp/release-notes.txt
+
+	# 删除已存在的 Release
+	@echo "🔄 删除旧的 GitHub Release (如果存在)..."
 	@gh release delete v$(VERSION) --yes 2>/dev/null || true
+
+	# 创建新的 Release
+	@echo "✨ 创建新的 GitHub Release..."
 	gh release create v$(VERSION) \
 		--title "SubscribeManager v$(VERSION)" \
 		--notes-file /tmp/release-notes.txt
