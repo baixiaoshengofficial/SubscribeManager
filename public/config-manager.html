@@ -630,7 +630,15 @@
     <script src="/js/i18n.js"></script>
     <script>
         const THEME_KEY = 'preferredTheme';
-        const _t = (k, params) => (window.i18n && window.i18n.t(k, params)) || k;
+        const _t = (k, params) => {
+            if (window.i18n && window.i18n.t) {
+                const result = window.i18n.t(k, params);
+                if (result !== undefined && result !== null) {
+                    return result;
+                }
+            }
+            return k;
+        };
         let adminPath = 'admin';
 
         function getSystemTheme() {

@@ -5,27 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.2] - 2026-03-13
 
-### Added
-- 新功能占位符
-
-### Changed
-- 变更占位符
-
-### Deprecated
-- 废弃功能占位符
-
-### Removed
-- 移除功能占位符
 
 ### Fixed
-- 修复占位符
 
-### Security
-- 安全修复占位符
-
----
+- 🐛 fix i18n incorrect
 
 ## [1.0.1] - 2026-02-26
 
@@ -68,6 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/jokerknight/SubscribeManager/compare/v1.0.1...HEAD
+[1.0.2]: https://github.com/jokerknight/SubscribeManager/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/jokerknight/SubscribeManager/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/jokerknight/SubscribeManager/releases/tag/v1.0.0

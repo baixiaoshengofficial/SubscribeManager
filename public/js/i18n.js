@@ -51,11 +51,11 @@
 
   function t(key, params) {
     let value = get(state.dict, key);
-    if (typeof value === 'string') return formatString(value, params);
+    if (value !== undefined && value !== null) return formatString(value, params);
 
     // 如果当前语言没有找到，尝试回退到默认英文
     value = get(defaultDict, key);
-    if (typeof value === 'string') return formatString(value, params);
+    if (value !== undefined && value !== null) return formatString(value, params);
 
     return key; // 如果默认英文也找不到，直接返回键本身
   }

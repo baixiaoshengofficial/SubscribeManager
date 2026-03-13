@@ -1,6 +1,14 @@
 // 核心状态与初始化
 let adminPath = 'admin';
-const _t = (k, params) => (window.i18n && window.i18n.t(k, params)) || k;
+const _t = (k, params) => {
+  if (window.i18n && window.i18n.t) {
+    const result = window.i18n.t(k, params);
+    if (result !== undefined && result !== null) {
+      return result;
+    }
+  }
+  return k;
+};
 const THEME_KEY = 'preferredTheme';
 
 function getSystemTheme() {
