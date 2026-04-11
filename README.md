@@ -10,13 +10,9 @@
 
 [![Star History Chart](https://api.star-history.com/svg?repos=baixiaoshengofficial/SubscribeManager&type=Date)](https://star-history.com/#baixiaoshengofficial/SubscribeManager&Date)
 
-### Changelog V1.0.1
+### Changelog
 
-- Optimized UI, added dark mode, card view for node list, added hover highlights
-- Fixed issue with subscription creation errors
-- Fixed many other bugs
-- Wrote some bugs
-- Coding with Codex or Claude is the way to go, others are trash
+[View full changelog →](https://github.com/baixiaoshengofficial/SubscribeManager/blob/main/CHANGELOG.md)
 
 ### Changelog V1.0.0
 

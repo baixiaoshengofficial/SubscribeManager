@@ -10,20 +10,9 @@
 
 [![Star History Chart](https://api.star-history.com/svg?repos=baixiaoshengofficial/SubscribeManager&type=Date)](https://star-history.com/#baixiaoshengofficial/SubscribeManager&Date)
 
-### 更新日志V1.0.1
+### 更新日志
 
-- 优化了UI，新增暗黑模式，节点列表新增卡片模式，增加高亮悬停
-- 修复了新增订阅报错的问题
-- 修复了很多别的bug
-- 写了一些bug
-- 写代码还是要用 Codex 或者 Claude，其他的都是垃圾
-
-### 更新日志V1.0.0
-
-- 支持通过订阅链接导入节点
-- 支持配置 Subconverter+自定义模板 或 默认模板 生成 Clash 订阅节点
-- UI 更新
-- 代码重构
+[查看完整更新日志 →](https://github.com/baixiaoshengofficial/SubscribeManager/blob/main/CHANGELOG.md)
 
 ### 简介
 
