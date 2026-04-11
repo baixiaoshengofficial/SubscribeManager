@@ -1,14 +1,14 @@
 # SubscribeManager
 
-[中文](https://github.com/jokerknight/SubscribeManager/blob/main/README_ZH.md) | EN
+[中文](https://github.com/baixiaoshengofficial/SubscribeManager/blob/main/README_ZH.md) | EN
 
 ## Repository
 
-[SubscribeManager](https://github.com/jokerknight/SubscribeManager) Give it a Star
+[SubscribeManager](https://github.com/baixiaoshengofficial/SubscribeManager) Give it a Star
 
 ### Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=jokerknight/SubscribeManager&type=Date)](https://star-history.com/#jokerknight/SubscribeManager&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=baixiaoshengofficial/SubscribeManager&type=Date)](https://star-history.com/#baixiaoshengofficial/SubscribeManager&Date)
 
 ### Changelog V1.0.1
 
@@ -182,5 +182,5 @@ When Subconvert URL is configured:
 
 ## REF
 
-[ProxyCli](https://github.com/jokerknight/ProxyCli)
+[ProxyCli](https://github.com/baixiaoshengofficial/ProxyCli)
 

@@ -1,14 +1,14 @@
 # SubscribeManager
 
-[EN](https://github.com/jokerknight/SubscribeManager/blob/main/README.md)|中文
+[EN](https://github.com/baixiaoshengofficial/SubscribeManager/blob/main/README.md)|中文
 
 ## 开源地址
 
-[SubscribeManager](https://github.com/jokerknight/SubscribeManager)动动你的小手给个 Star
+[SubscribeManager](https://github.com/baixiaoshengofficial/SubscribeManager)动动你的小手给个 Star
 
 ### Star 趋势
 
-[![Star History Chart](https://api.star-history.com/svg?repos=jokerknight/SubscribeManager&type=Date)](https://star-history.com/#jokerknight/SubscribeManager&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=baixiaoshengofficial/SubscribeManager&type=Date)](https://star-history.com/#baixiaoshengofficial/SubscribeManager&Date)
 
 ### 更新日志V1.0.1
 
@@ -35,7 +35,7 @@ SubscribeManager 是一个轻量级、简单的代理节点订阅管理系统。
 
 ## 🌐 线上体验
 
-[SubscribeManager OnRender](https://subscribemanager-zlj2.onrender.com/admin)
+[SubscribeManager Sponsor By FOSSVPS](https://subscribe.baixiaosheng.de/admin)
 
 **username:** `admin`
 
@@ -277,4 +277,4 @@ docker compose up -d
   
 ## REF
 
-[ProxyCli](https://github.com/jokerknight/ProxyCli)
+[ProxyCli](https://github.com/baixiaoshengofficial/ProxyCli)
