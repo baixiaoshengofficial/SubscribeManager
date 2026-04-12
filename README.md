@@ -14,13 +14,6 @@
 
 [View full changelog →](https://github.com/baixiaoshengofficial/SubscribeManager/blob/main/CHANGELOG.md)
 
-### Changelog V1.0.0
-
-- Support importing nodes via subscription link
-- Support configuring Subconverter + custom template or default template to generate Clash subscription nodes
-- UI updates
-- Code refactoring
-
 ### Overview
 
 SubscribeManager is a lightweight and simple proxy node subscription management system.
@@ -31,7 +24,7 @@ Provides an intuitive web interface and supports multiple proxy protocols and su
 
 ## 🌐 Live Demo
 
-[SubscribeManager OnRender](https://subscribemanager-zlj2.onrender.com/admin)
+[SubscribeManager Sponsor By FOSSVPS](https://subscribe.baixiaosheng.de/admin)
 **username:** `admin`
 **password:** `admin`
 **path:** `admin`

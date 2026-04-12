@@ -5,64 +5,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
 
 ## [1.0.3] - 2026-04-11
 
 ### Changed
+- Update github username in README.md and README_ZH.md
+- Update preview link in README.md and README_ZH.md
 
-- update github username in README.md and README_ZH.md
-- update preview link in README.md and README_ZH.md
 ### Added
-- add github link in pages
-  
+- Add github link in pages
+
+---
+
 ## [1.0.2] - 2026-03-13
 
-
 ### Fixed
+- Fix i18n incorrect
 
-- 🐛 fix i18n incorrect
+---
 
 ## [1.0.1] - 2026-02-26
 
 ### Added
-- ✨ 优化了UI，新增暗黑模式，节点列表新增卡片模式，增加高亮悬停
-- 📦 自定义模板 URL 添加示例链接
-- 🔗 Subconverter API URL 添加项目地址链接
+- Optimized UI, added dark mode, card view for node list, added hover highlights
+- Add example link for custom template URL
+- Add project link for Subconverter API URL
 
 ### Changed
-- 🎨 UI/UX 改进
+- UI/UX improvements
 
 ### Fixed
-- 🐛 修复了新增订阅报错的问题
-- 🐛 修复了很多别的bug
+- Fixed subscription creation error issue
+- Fixed many other bugs
 
 ### Known Issues
-- ⚠️ 写了一些bug（作者自述）
+- Wrote some bugs (author's note)
 
 ### Notes
-- 💻 写代码还是要用 Codex 或者 Claude，其他的都是垃圾（作者自述）
+- Coding with Codex or Claude is the way to go, others are trash (author's note)
 
 ---
 
 ## [1.0.0] - 2025-XX-XX
 
 ### Added
-- 🎉 初始版本发布
-- ✅ 支持通过订阅链接导入节点
-- ✅ 支持配置 Subconverter+自定义模板 或 默认模板 生成 Clash 订阅节点
-- 🎨 UI 更新
-- 🔧 代码重构
+- Initial release
+- Support importing nodes via subscription link
+- Support configuring Subconverter + custom template or default template to generate Clash subscription nodes
+- UI updates
+- Code refactoring
 
 ### Features
-- 多协议支持: SS, VMess, Trojan, VLESS, SOCKS5, Snell, Hysteria2, Tuic
-- 订阅管理: 创建多个订阅、自定义路径、批量导入、拖拽排序
-- 多种订阅格式: 原始, Base64, Surge, Clash, Shadowsocks
-- 高级 Clash 功能: 内置默认模板(3900+规则)、自动展开规则提供商、兼容ClashMeta和ClashX
-- 安全特性: 管理登录认证、会话管理、安全Cookie
-- 界面设计: 响应式设计、移动设备友好
+- Multi-protocol support: SS, VMess, Trojan, VLESS, SOCKS5, Snell, Hysteria2, Tuic
+- Subscription management: Create multiple subscriptions, custom paths, bulk import, drag-and-drop sorting
+- Multiple subscription formats: Raw, Base64, Surge, Clash, Shadowsocks
+- Advanced Clash features: Built-in default template (3900+ rules), automatic rule-provider expansion, compatible with ClashMeta and ClashX
+- Security features: Admin login authentication, session management, secure cookies
+- Interface design: Responsive design, mobile-friendly
 
 ---
 
-[1.0.2]: https://github.com/jokerknight/SubscribeManager/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/jokerknight/SubscribeManager/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/jokerknight/SubscribeManager/releases/tag/v1.0.0
+[1.0.3]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.2...tag/v1.0.3
+[1.0.2]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.1...tag/v1.0.2
+[1.0.1]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.0...tag/v1.0.1
+[1.0.0]: https://github.com/baixiaoshengofficial/SubscribeManager/releases/tag/v1.0.0
