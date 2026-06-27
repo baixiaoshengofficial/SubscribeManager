@@ -1,20 +1,21 @@
-# 使用官方 Node.js 20 镜像
-FROM node:20-alpine
-
-# 设置工作目录
-WORKDIR /app
-
-# 复制 package.json 和 package-lock.json
-COPY package*.json ./
-
-# 安装依赖
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
 RUN npm install
-# 复制应用源代码
-COPY . .
-RUN rm -rf node_modules && npm install
+COPY frontend/ ./
+RUN npm run build
 
-# 暴露端口
+FROM node:20-alpine
+WORKDIR /app/backend
+ENV NODE_ENV=production
+
+COPY backend/package*.json ./
+RUN npm ci --omit=dev
+
+COPY backend/ ./
+COPY version.json ../version.json
+COPY --from=frontend-builder /app/frontend/dist ../frontend/dist
+
+VOLUME ["/app/data"]
 EXPOSE 3000
-
-# 启动命令
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

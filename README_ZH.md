@@ -165,7 +165,35 @@ docker compose up -d
 ```
 
 
-6. 访问管理面板: `http://localhost:3000/${ADMIN_PATH}`
+6. 访问管理面板: `http://localhost:3000/`
+
+## 🧩 前后端分离开发
+
+项目已拆分为两个子项目：
+
+- `frontend/`：Vue 3 + Vite 管理端
+- `backend/`：Node.js/Express 后端，负责 API、认证、sqlite 数据访问和公开订阅输出
+
+根目录保留 Docker、Makefile、文档和部署编排文件。
+
+本地开发时建议分别启动：
+
+```bash
+make backend-dev
+make frontend-dev
+```
+
+或者一键启动前后端：
+
+```bash
+make dev
+```
+
+前端开发地址为 `http://localhost:5173`，通过 Vite proxy 访问后端 `http://localhost:3000`。
+
+> 端口统一在根目录 `.env` 中配置：`PORT`（后端）与 `FRONTEND_PORT`（前端）。`make dev`、`make backend-dev`、`make frontend-dev` 以及 Vite proxy 都会读取该配置；如需临时覆盖，可 `make dev BACKEND_PORT=3001 FRONTEND_PORT=5174`。
+
+生产 Docker 镜像会自动构建 `frontend/dist`，并由后端托管静态资源。
 
 ## 💾 数据库
 
@@ -188,7 +216,7 @@ docker compose up -d
 
 - 生成默认模板或仅生成带有节点的 Clash 规则: 选择订阅->勾选或取消使用默认模版->保存->点击生成 Clash 订阅节点
 
-- **协议说明**: 访问 `http://localhost:3000/${ADMIN_PATH}/config-manager` 查看协议支持概览与矩阵
+- **协议说明**: 协议支持和高级配置将逐步迁移到 Vue 管理端
 
 - **节点排序**: 节点列表 → 拖拽 → 自动保存
 

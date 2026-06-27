@@ -1,5 +1,5 @@
-version: '3.8'
-
+# 生产部署：默认拉取 Docker Hub 镜像。
+# 本地构建部署：使用 docker-compose.override.yaml (build: .) 或 `make buildup`。
 services:
   app:
     image: knighttools/subscribe-manager:latest
@@ -9,19 +9,22 @@ services:
       - "3000:3000"
     volumes:
       - ./data:/app/data
-      #- .:/app
-      #- /app/node_modules
     env_file:
       - .env
     environment:
-      #- NODE_ENV=production
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=3000
       - SESSION_SECRET=${SESSION_SECRET}
       - ADMIN_PATH=${ADMIN_PATH}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - DB_PATH=${DB_PATH}
+      - DB_PATH=/app/data/subscriptions.db
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - subscribe-manager-network
 

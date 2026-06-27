@@ -1,0 +1,28 @@
+# Dependencies
+**/node_modules
+
+# Build output
+frontend/dist
+
+# Data & runtime
+data/*.db
+backend/data/*.db
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Git & metadata
+.git
+.gitignore
+.github
+.DS_Store
+
+# Docs / dev tooling
+*.md
+scripts
+coverage
+**/.codebuddy
+docker-compose*.yaml
+Makefile
