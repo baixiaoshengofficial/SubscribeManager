@@ -19,6 +19,7 @@ const errorHandler = require("./middleware/errorHandler");
 const sessionService = require("./services/sessionService");
 const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
 const frontendIndexPath = path.join(frontendDistPath, "index.html");
+const serveFrontend = process.env.SERVE_FRONTEND !== "false";
 
 async function requireAuth(req, res, next) {
   const isApiRequest = req.originalUrl.startsWith("/api/");
@@ -60,14 +61,16 @@ app.set("trust proxy", 1);
 app.use(languageHandler);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(frontendDistPath));
+if (serveFrontend) {
+  app.use(express.static(frontendDistPath));
+}
 app.use(
   session({
     secret: config.sessionSecret,
     resave: false,
     saveUninitialized: true,
     cookie: {
-      secure: config.nodeEnv === "production",
+      secure: config.cookieSecure,
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24小时
     },
@@ -112,11 +115,12 @@ async function startApp() {
     // 前端分离后，认证接口仅通过 API 暴露。
     app.use("/api/auth", authRoutes);
 
-    // Vue 管理端入口。生产环境由 Docker 构建后复制到 frontend/dist；开发环境使用 Vite dev server。
-    app.get("/", sendFrontendApp);
-    app.get(`/${config.adminPath}`, (_req, res) => {
-      res.redirect("/");
-    });
+    if (serveFrontend) {
+      app.get("/", sendFrontendApp);
+      app.get(`/${config.adminPath}`, (_req, res) => {
+        res.redirect("/");
+      });
+    }
 
     // 注册路由
     app.use("/api", requireAuth, apiRoutes);

@@ -1,4 +1,4 @@
-/* ===== design tokens (aligned with legacy admin theme) ===== */
+/* ===== design tokens ===== */
 :root {
   --primary: #2a6563;
   --primary-dark: #1f4f4d;
@@ -43,7 +43,7 @@
   --font-display: 'Fraunces', 'Noto Serif SC', Georgia, serif;
   --transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* legacy aliases used in components */
+  /* component aliases */
   --app-bg: var(--page-bg);
   --app-text: var(--text-primary);
   --app-card-bg: var(--card-bg);
@@ -268,7 +268,7 @@ html.dark body::after {
   color: var(--danger);
 }
 
-/* legacy alias */
+/* alias */
 .header-actions {
   display: flex;
   align-items: center;

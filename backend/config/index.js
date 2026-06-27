@@ -1,10 +1,9 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
-require('dotenv').config();
+const { BACKEND_PORT } = require('../../config/ports.cjs');
 
 const config = {
   // Server configuration
-  port: process.env.PORT || 3000,
+  port: BACKEND_PORT,
   nodeEnv: process.env.NODE_ENV || 'development',
 
   // Session configuration
@@ -27,6 +26,7 @@ const config = {
   defaultLanguage: process.env.DEFAULT_LANGUAGE || 'zh-CN',
 
   // Security
+  cookieSecure: process.env.COOKIE_SECURE === 'true',
   corsOptions: {
     origin: process.env.CORS_ORIGIN || '*',
     credentials: true,

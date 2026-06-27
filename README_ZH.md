@@ -115,8 +115,10 @@ ADMIN_PATH=admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=请改为强密码
 
-# 服务端口（源码 / Docker 均使用 PORT）
-PORT=3000
+# 后端监听端口（Node / Docker 容器内）
+BACKEND_PORT=3000
+# 对外访问端口（开发：Vite；Docker：宿主机映射）
+FRONTEND_PORT=3000
 
 # 数据库路径
 # 源码部署：相对项目根目录
@@ -138,10 +140,10 @@ mkdir -p data
 部署完成后打开：
 
 ```text
-http://<主机>:<PORT>/
+http://<主机>:<FRONTEND_PORT>/
 ```
 
-管理后台与公开订阅链接均通过该端口访问。`ADMIN_PATH` 用于部分 API 配置，**不是** URL 路径前缀。
+源码部署时通常 `FRONTEND_PORT` 与 `BACKEND_PORT` 相同；Docker 可分别配置（例如宿主机 `5101` → 容器 `5100`）。
 
 ---
 
@@ -178,7 +180,7 @@ make backend-dev
 |------|------|
 | `make install` | 安装 `backend/`、`frontend/` 依赖 |
 | `make frontend-build` | 构建前端到 `frontend/dist` |
-| `make backend-dev` | 启动生产后端（端口读 `.env` 的 `PORT`） |
+| `make backend-dev` | 启动生产后端（端口读 `.env` 的 `BACKEND_PORT`） |
 | `make test` | 运行后端测试 |
 | `make check` | 测试 + 前端构建校验 |
 
@@ -213,35 +215,29 @@ mkdir -p data
 docker run -d \
   --name subscribe-manager \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
   -v "$(pwd)/data:/app/data" \
   --env-file .env \
   -e NODE_ENV=production \
-  -e PORT=3000 \
+  -e BACKEND_PORT="${BACKEND_PORT}" \
   -e DB_PATH=/app/data/subscriptions.db \
   subscribe-manager:local
 ```
 
-**自定义宿主机端口**（例如映射到 8080）：
+**自定义端口**（宿主机 5101 → 容器 5100）：
 
 ```bash
+# .env 示例：BACKEND_PORT=5100  FRONTEND_PORT=5101
 docker run -d \
   --name subscribe-manager \
   --restart unless-stopped \
-  -p 8080:3000 \
+  -p 5101:5100 \
   -v "$(pwd)/data:/app/data" \
   --env-file .env \
   -e NODE_ENV=production \
+  -e BACKEND_PORT=5100 \
   -e DB_PATH=/app/data/subscriptions.db \
   subscribe-manager:local
-```
-
-**常用运维命令**
-
-```bash
-docker logs -f subscribe-manager    # 查看日志
-docker stop subscribe-manager       # 停止
-docker rm subscribe-manager         # 删除容器
 ```
 
 **使用 Docker Hub 预构建镜像**（无需本地 `docker build`）：
@@ -252,12 +248,21 @@ docker pull knighttools/subscribe-manager:latest
 docker run -d \
   --name subscribe-manager \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
   -v "$(pwd)/data:/app/data" \
   --env-file .env \
   -e NODE_ENV=production \
+  -e BACKEND_PORT="${BACKEND_PORT}" \
   -e DB_PATH=/app/data/subscriptions.db \
   knighttools/subscribe-manager:latest
+```
+
+**常用运维命令**
+
+```bash
+docker logs -f subscribe-manager
+docker stop subscribe-manager
+docker rm subscribe-manager
 ```
 
 ---
@@ -304,7 +309,14 @@ make buildup
 
 **修改映射端口**
 
-编辑 `docker-compose.yaml` 中 `ports`，例如 `"8080:3000"` 表示宿主机 8080 → 容器 3000。
+在 `.env` 中设置 `FRONTEND_PORT`（宿主机）与 `BACKEND_PORT`（容器内监听）。
+
+Compose 启动 **backend**、**frontend** 两个服务，各映射一个端口：
+
+- `BACKEND_PORT:BACKEND_PORT` — API 与订阅输出（如 `http://localhost:5100/devtest`）
+- `FRONTEND_PORT:FRONTEND_PORT` — 管理界面（如 `http://localhost:5101/`）
+
+浏览器请访问 **FRONTEND_PORT**；订阅链接由后端 `BACKEND_PORT` 提供（可在 `.env` 设置 `PUBLIC_BASE_URL` 供外网 Subconverter 使用）。
 
 **常用命令**
 
@@ -350,9 +362,9 @@ make frontend-dev
 make dev
 ```
 
-前端开发地址为 `http://localhost:<FRONTEND_PORT>`（默认 5173），通过 Vite 代理访问后端 `http://localhost:<PORT>`（默认 3000）。
+前端开发地址为 `http://localhost:<FRONTEND_PORT>`，通过 Vite 代理访问后端 `http://localhost:<BACKEND_PORT>`。
 
-> 端口在根目录 `.env` 中配置：`PORT`（后端）、`FRONTEND_PORT`（前端）。`make dev` 会读取该配置；临时覆盖示例：`make dev BACKEND_PORT=3001 FRONTEND_PORT=5174`。
+> `.env` 端口：`BACKEND_PORT`（后端）、`FRONTEND_PORT`（前端）。示例：`make dev BACKEND_PORT=3001 FRONTEND_PORT=5174`。
 
 生产 Docker 镜像会在构建阶段执行 `npm run build`，由后端托管 `frontend/dist`（见 [部署教程](#-部署教程)）。
 

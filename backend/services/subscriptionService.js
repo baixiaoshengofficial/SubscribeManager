@@ -1,5 +1,6 @@
 const { dbQuery, dbRun, validateSubscriptionPath, withTransaction } = require('../utils');
 const ApiError = require('../utils/ApiError');
+const config = require('../config');
 
 async function getSubscriptions() {
   return dbQuery(`
@@ -65,7 +66,7 @@ async function generateSubscriptionContent(path) {
   // 构建当前订阅的完整 URL（用于 Subconvert API）
   const protocol = process.env.PROTOCOL || 'http';
   const host = process.env.HOST || 'localhost';
-  const port = process.env.PORT || 3000;
+  const port = config.port;
   const subscriptionUrl = `${protocol}://${host}:${port}/${path}`;
 
   // 生成订阅内容

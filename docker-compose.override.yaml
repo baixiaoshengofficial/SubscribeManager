@@ -1,5 +1,11 @@
-# 本地构建覆盖：`docker compose up -d --build` 会用本地 Dockerfile 构建镜像，
-# 而不是拉取 Docker Hub。该文件仅在本地开发/测试时生效，发布时无需带上。
 services:
-  app:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_BACKEND_ORIGIN: ${PUBLIC_BASE_URL:-http://127.0.0.1:${BACKEND_PORT}}

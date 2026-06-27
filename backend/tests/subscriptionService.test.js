@@ -1,3 +1,7 @@
+jest.mock('../config', () => ({
+  port: 3000,
+}));
+
 const subscriptionService = require('../services/subscriptionService');
 const { dbQuery, dbRun, withTransaction } = require('../utils');
 const ApiError = require('../utils/ApiError');

@@ -10,7 +10,10 @@ export function getSubscriptionOrigin() {
   if (import.meta.env.PROD) {
     return window.location.origin;
   }
-  const port = import.meta.env.VITE_BACKEND_PORT || '3000';
+  const port = import.meta.env.VITE_BACKEND_PORT;
+  if (!port) {
+    throw new Error('VITE_BACKEND_PORT is not set. Configure BACKEND_PORT in .env.');
+  }
   return `${window.location.protocol}//${window.location.hostname}:${port}`;
 }
 

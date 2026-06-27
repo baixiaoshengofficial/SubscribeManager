@@ -85,8 +85,9 @@ ADMIN_PATH=admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=use-a-strong-password
 
-# Service port (source and Docker)
-PORT=3000
+# Service ports
+BACKEND_PORT=3000
+FRONTEND_PORT=3000
 
 # Database path
 # Source deploy: relative to project root
@@ -108,10 +109,10 @@ mkdir -p data
 After deployment, open:
 
 ```text
-http://<host>:<PORT>/
+http://<host>:<FRONTEND_PORT>/
 ```
 
-The admin UI and public subscription links are served on this port. `ADMIN_PATH` is used in API config and is **not** a URL path prefix.
+For source deploy, `FRONTEND_PORT` and `BACKEND_PORT` are usually the same. Docker can map them differently (e.g. host `5101` → container `5100`).
 
 ---
 
@@ -148,7 +149,7 @@ make backend-dev
 |---------|-------------|
 | `make install` | Install `backend/` and `frontend/` dependencies |
 | `make frontend-build` | Build frontend to `frontend/dist` |
-| `make backend-dev` | Start production backend (port from `.env` `PORT`) |
+| `make backend-dev` | Start production backend (port from `BACKEND_PORT` in `.env`) |
 | `make test` | Run backend tests |
 | `make check` | Tests + frontend build verification |
 
@@ -183,25 +184,26 @@ mkdir -p data
 docker run -d \
   --name subscribe-manager \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
   -v "$(pwd)/data:/app/data" \
   --env-file .env \
   -e NODE_ENV=production \
-  -e PORT=3000 \
+  -e BACKEND_PORT="${BACKEND_PORT}" \
   -e DB_PATH=/app/data/subscriptions.db \
   subscribe-manager:local
 ```
 
-**Custom host port** (e.g. map host 8080):
+**Custom ports** (host 5101 → container 5100):
 
 ```bash
 docker run -d \
   --name subscribe-manager \
   --restart unless-stopped \
-  -p 8080:3000 \
+  -p 5101:5100 \
   -v "$(pwd)/data:/app/data" \
   --env-file .env \
   -e NODE_ENV=production \
+  -e BACKEND_PORT=5100 \
   -e DB_PATH=/app/data/subscriptions.db \
   subscribe-manager:local
 ```
@@ -222,10 +224,11 @@ docker pull knighttools/subscribe-manager:latest
 docker run -d \
   --name subscribe-manager \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
   -v "$(pwd)/data:/app/data" \
   --env-file .env \
   -e NODE_ENV=production \
+  -e BACKEND_PORT="${BACKEND_PORT}" \
   -e DB_PATH=/app/data/subscriptions.db \
   knighttools/subscribe-manager:latest
 ```
@@ -274,7 +277,12 @@ make buildup
 
 **Change published port**
 
-Edit `ports` in `docker-compose.yaml`, e.g. `"8080:3000"` maps host 8080 to container 3000.
+Compose runs **backend** and **frontend** as separate services:
+
+- `BACKEND_PORT:BACKEND_PORT` — API and subscription output
+- `FRONTEND_PORT:FRONTEND_PORT` — admin UI (Nginx + `/api` proxy)
+
+Open **FRONTEND_PORT** in the browser. Subscription URLs use **BACKEND_PORT** (set `PUBLIC_BASE_URL` in `.env` for remote Subconverter).
 
 **Common commands**
 
@@ -311,7 +319,7 @@ make backend-dev  # backend only
 make frontend-dev # frontend only
 ```
 
-Frontend dev server defaults to `http://localhost:5173`; Vite proxies `/api` to the backend on `http://localhost:3000`. Ports are set in root `.env` (`PORT`, `FRONTEND_PORT`).
+Frontend dev: `http://localhost:<FRONTEND_PORT>`; Vite proxies `/api` to `http://localhost:<BACKEND_PORT>`.
 
 For production deployment, see [Deployment Guide](#-deployment-guide) above.
 

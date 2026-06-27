@@ -1,26 +1,46 @@
-# 生产部署：默认拉取 Docker Hub 镜像。
-# 本地构建部署：使用 docker-compose.override.yaml (build: .) 或 `make buildup`。
+# 前后端分离：后端 API + 订阅输出
 services:
-  app:
-    image: knighttools/subscribe-manager:latest
-    container_name: subscribe-manager
+  backend:
+    image: knighttools/subscribe-manager-backend:latest
+    container_name: subscribe-manager-backend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
       - ./data:/app/data
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - SESSION_SECRET=${SESSION_SECRET}
-      - ADMIN_PATH=${ADMIN_PATH}
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - DB_PATH=/app/data/subscriptions.db
+      NODE_ENV: production
+      DB_PATH: /app/data/subscriptions.db
+      BACKEND_PORT: ${BACKEND_PORT}
+      SERVE_FRONTEND: "false"
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/version"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${BACKEND_PORT}/version >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - subscribe-manager-network
+
+  frontend:
+    image: knighttools/subscribe-manager-frontend:latest
+    container_name: subscribe-manager-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    env_file:
+      - .env
+    environment:
+      FRONTEND_PORT: ${FRONTEND_PORT}
+      BACKEND_UPSTREAM: http://backend:${BACKEND_PORT}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${FRONTEND_PORT}/ >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -1,4 +1,4 @@
-// 前端节点链接解析工具（与旧版 admin-nodes.js 行为一致）
+// 前端节点链接解析工具
 
 const NODE_TYPES = {
   SS: 'ss://',

@@ -1,9 +1,8 @@
-# 兼容 `docker build -t subscribe-manager:local .`：仅构建后端 API 镜像。
-# 前后端分离部署请使用：docker compose up -d --build
 FROM node:20-alpine
 WORKDIR /app/backend
 ENV NODE_ENV=production
-ENV SERVE_FRONTEND=false
+
+RUN apk add --no-cache wget
 
 COPY backend/package*.json ./
 RUN npm ci --omit=dev

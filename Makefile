@@ -7,11 +7,9 @@ VERSION := $(shell cat version.json | grep '"version"' | head -1 | cut -d '"' -f
 TAG_PREFIX := tag/v
 RELEASE_TAG := $(TAG_PREFIX)$(VERSION)
 
-# 端口优先从 .env 读取，命令行可覆盖
-BACKEND_PORT ?= $(shell grep -E '^PORT=' .env 2>/dev/null | head -1 | cut -d '=' -f 2 | tr -d '\r')
-BACKEND_PORT ?= 3000
+# 端口仅从 .env 读取，命令行可覆盖
+BACKEND_PORT ?= $(shell grep -E '^BACKEND_PORT=' .env 2>/dev/null | head -1 | cut -d '=' -f 2 | tr -d '\r')
 FRONTEND_PORT ?= $(shell grep -E '^FRONTEND_PORT=' .env 2>/dev/null | head -1 | cut -d '=' -f 2 | tr -d '\r')
-FRONTEND_PORT ?= 5173
 
 .PHONY: help dev install backend-dev frontend-dev frontend-build test check clean up buildup down logs build push github-release release update-changelog bump-patch bump-minor bump-major
 
@@ -25,6 +23,9 @@ install: ## 安装前后端依赖
 	cd frontend && npm install
 
 dev: ## 一键启动前后端开发服务（Ctrl+C 退出）
+	@test -f .env || (echo "❌ 缺少 .env，请执行: cp .env.example .env"; exit 1)
+	@test -n "$(BACKEND_PORT)" || (echo "❌ .env 缺少 BACKEND_PORT"; exit 1)
+	@test -n "$(FRONTEND_PORT)" || (echo "❌ .env 缺少 FRONTEND_PORT"; exit 1)
 	@echo "🚀 启动开发服务（端口来自 .env）"
 	@command -v node >/dev/null 2>&1 || { echo "❌ 未安装 node"; exit 1; }
 	@command -v npm  >/dev/null 2>&1 || { echo "❌ 未安装 npm"; exit 1; }
@@ -33,13 +34,13 @@ dev: ## 一键启动前后端开发服务（Ctrl+C 退出）
 	@test -d frontend/node_modules || { echo "⚠️  frontend 依赖未安装，自动执行 (make install)"; cd frontend && npm install; }
 	@bash -c '\
 		BP=$(BACKEND_PORT); FP=$(FRONTEND_PORT); \
-		echo "   后端端口 : $$BP  (来自 .env: PORT)"; \
+		echo "   后端端口 : $$BP  (来自 .env: BACKEND_PORT)"; \
 		echo "   前端端口 : $$FP  (来自 .env: FRONTEND_PORT)"; \
 		echo "   预检端口占用..."; \
 		if lsof -i TCP:$$BP -sTCP:LISTEN >/dev/null 2>&1; then \
 			echo "❌ 后端端口 $$BP 已被占用："; \
 			lsof -i TCP:$$BP -sTCP:LISTEN 2>/dev/null | sed "s/^/    /"; \
-			echo "   解决：kill <上面PID>  或  改 .env 的 PORT  或  make down(若是 docker)"; \
+			echo "   解决：kill <上面PID>  或  改 .env 的 BACKEND_PORT  或  make down(若是 docker)"; \
 			exit 2; \
 		fi; \
 		if lsof -i TCP:$$FP -sTCP:LISTEN >/dev/null 2>&1; then \
@@ -50,7 +51,7 @@ dev: ## 一键启动前后端开发服务（Ctrl+C 退出）
 		fi; \
 		echo "   端口 $$BP / $$FP 空闲，开始启动..."; \
 		trap "kill 0" INT TERM EXIT; \
-		(cd backend  && PORT=$$BP npm start) > /tmp/sm-backend.log 2>&1 & BE=$$!; \
+		(cd backend  && BACKEND_PORT=$$BP npm start) > /tmp/sm-backend.log 2>&1 & BE=$$!; \
 		(cd frontend && VITE_BACKEND_TARGET=http://localhost:$$BP npm run dev -- --port $$FP --strictPort) > /tmp/sm-frontend.log 2>&1 & FE=$$!; \
 		b_ready=0; f_ready=0; \
 		for i in $$(seq 1 40); do \
@@ -78,9 +79,14 @@ dev: ## 一键启动前后端开发服务（Ctrl+C 退出）
 		wait'
 
 backend-dev: ## 仅启动后端
-	cd backend && PORT=$(BACKEND_PORT) npm start
+	@test -f .env || (echo "❌ 缺少 .env，请执行: cp .env.example .env"; exit 1)
+	@test -n "$(BACKEND_PORT)" || (echo "❌ .env 缺少 BACKEND_PORT"; exit 1)
+	cd backend && BACKEND_PORT=$(BACKEND_PORT) npm start
 
 frontend-dev: ## 仅启动前端
+	@test -f .env || (echo "❌ 缺少 .env，请执行: cp .env.example .env"; exit 1)
+	@test -n "$(BACKEND_PORT)" || (echo "❌ .env 缺少 BACKEND_PORT"; exit 1)
+	@test -n "$(FRONTEND_PORT)" || (echo "❌ .env 缺少 FRONTEND_PORT"; exit 1)
 	cd frontend && VITE_BACKEND_TARGET=http://localhost:$(BACKEND_PORT) npm run dev -- --port $(FRONTEND_PORT) --strictPort
 
 frontend-build: ## 构建前端产物到 frontend/dist
@@ -108,7 +114,10 @@ down: ## 停止 docker compose
 logs: ## 跟随 docker compose 日志
 	docker compose logs -f
 
-build: ## 本地构建镜像（仅当前架构，不推送）
+build: ## 本地构建 Compose 镜像（backend + frontend）
+	docker compose build
+
+legacy-build: ## 仅构建后端单镜像（兼容旧命令）
 	docker build -t $(IMAGE_NAME):$(TAG) .
 
 # 多架构构建并推送到 Docker Hub（含 latest + 版本号）

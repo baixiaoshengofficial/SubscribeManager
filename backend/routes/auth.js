@@ -21,7 +21,7 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-// 登出 API，保留前端分离调用兼容。
+// 登出 API
 router.post('/logout', async (req, res) => {
   if (req.session.sessionId) {
     await authService.logout(req.session.sessionId);
