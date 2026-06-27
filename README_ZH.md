@@ -88,84 +88,245 @@ Hysteria2, Tuic
 
 ## 🚀 部署教程
 
-  
-1. 确保已安装 **Docker** 和 **Docker Compose**
+SubscribeManager 生产环境由 **后端统一对外提供服务**：先构建 `frontend/dist`，再由 `backend` 托管静态页面与 API。以下三种方式任选其一。
 
-2. 克隆项目到本地
+### 准备工作
 
-3. 在项目根目录创建 `.env` 文件或复制 `.env.example` 文件并修改
+**环境要求**
 
+| 方式 | 要求 |
+|------|------|
+| 源码编译 | Node.js **20+**、npm |
+| Docker 单容器 | Docker **20+** |
+| Docker Compose | Docker **20+**、Docker Compose **v2+** |
 
+**配置环境变量**
+
+在项目根目录复制并编辑 `.env`：
+
+```bash
+cp .env.example .env
 ```
 
-示例 .env:
-
-SESSION_SECRET=你的会话密钥
-
+```ini
+# 必填：生产环境请修改默认值
+SESSION_SECRET=请改为随机长字符串
 ADMIN_PATH=admin
-
 ADMIN_USERNAME=admin
+ADMIN_PASSWORD=请改为强密码
 
-ADMIN_PASSWORD=你的密码
+# 服务端口（源码 / Docker 均使用 PORT）
+PORT=3000
 
+# 数据库路径
+# 源码部署：相对项目根目录
 DB_PATH=./data/subscriptions.db
+# Docker 部署：容器内固定为下方路径，通过卷挂载到宿主机 ./data
 
+# 可选：远程 Subconverter 无法访问本机时，填写公网可访问地址
+# PUBLIC_BASE_URL=https://sub.example.com
 ```
 
-  
+创建数据目录（源码部署时需要；Compose / `docker run` 会在首次启动时自动创建卷目录）：
 
-4. 启动服务
+```bash
+mkdir -p data
+```
 
-  
+**访问地址**
 
-- 使用已构建的 Docker Hub 镜像:
+部署完成后打开：
 
-  
+```text
+http://<主机>:<PORT>/
+```
 
-``` bash
+管理后台与公开订阅链接均通过该端口访问。`ADMIN_PATH` 用于部分 API 配置，**不是** URL 路径前缀。
 
+---
+
+### 方式一：从源码编译部署
+
+适合本机或 VPS 直接运行 Node，无需 Docker。
+
+```bash
+# 1. 获取代码
+git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
+cd SubscribeManager
+
+# 2. 配置环境变量（见上文）
+cp .env.example .env
+# 编辑 .env
+
+# 3. 安装依赖并构建前端
+make install
+make frontend-build
+
+# 4. 启动后端（读取根目录 .env，托管 frontend/dist）
+cd backend && npm start
+```
+
+或使用 Makefile 快捷命令（需已执行 `make install` 与 `make frontend-build`）：
+
+```bash
+make backend-dev
+```
+
+**常用命令**
+
+| 命令 | 说明 |
+|------|------|
+| `make install` | 安装 `backend/`、`frontend/` 依赖 |
+| `make frontend-build` | 构建前端到 `frontend/dist` |
+| `make backend-dev` | 启动生产后端（端口读 `.env` 的 `PORT`） |
+| `make test` | 运行后端测试 |
+| `make check` | 测试 + 前端构建校验 |
+
+**说明**
+
+- 修改前端代码后需重新执行 `make frontend-build` 再重启后端。
+- 数据库默认写入 `./data/subscriptions.db`（由 `DB_PATH` 控制）。
+- 本地**开发**（前后端热更新、分离端口）请见下文 [前后端分离开发](#-前后端分离开发)，与生产部署不同。
+
+---
+
+### 方式二：Docker 单容器部署
+
+适合只需一个容器、自行用 `docker run` 管理的场景。镜像内已包含构建好的前端与后端。
+
+**构建镜像**
+
+```bash
+git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
+cd SubscribeManager
+cp .env.example .env
+# 编辑 .env
+
+docker build -t subscribe-manager:local .
+```
+
+**运行容器**
+
+```bash
+mkdir -p data
+
+docker run -d \
+  --name subscribe-manager \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v "$(pwd)/data:/app/data" \
+  --env-file .env \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e DB_PATH=/app/data/subscriptions.db \
+  subscribe-manager:local
+```
+
+**自定义宿主机端口**（例如映射到 8080）：
+
+```bash
+docker run -d \
+  --name subscribe-manager \
+  --restart unless-stopped \
+  -p 8080:3000 \
+  -v "$(pwd)/data:/app/data" \
+  --env-file .env \
+  -e NODE_ENV=production \
+  -e DB_PATH=/app/data/subscriptions.db \
+  subscribe-manager:local
+```
+
+**常用运维命令**
+
+```bash
+docker logs -f subscribe-manager    # 查看日志
+docker stop subscribe-manager       # 停止
+docker rm subscribe-manager         # 删除容器
+```
+
+**使用 Docker Hub 预构建镜像**（无需本地 `docker build`）：
+
+```bash
+docker pull knighttools/subscribe-manager:latest
+
+docker run -d \
+  --name subscribe-manager \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v "$(pwd)/data:/app/data" \
+  --env-file .env \
+  -e NODE_ENV=production \
+  -e DB_PATH=/app/data/subscriptions.db \
+  knighttools/subscribe-manager:latest
+```
+
+---
+
+### 方式三：Docker Compose 部署
+
+适合生产环境长期运行，配置集中在 `docker-compose.yaml`，便于迁移与升级。
+
+**使用 Docker Hub 镜像（推荐）**
+
+`docker-compose.yaml` 默认拉取 `knighttools/subscribe-manager:latest`：
+
+```bash
+git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
+cd SubscribeManager
+cp .env.example .env
+# 编辑 .env
+
+mkdir -p data
 docker compose up -d
-
 ```
 
-  
+等价 Makefile 命令：
 
-- 从源码构建镜像并启动:
+```bash
+make up
+```
 
-  
+**从源码本地构建镜像**
 
-``` bash
+仓库内 `docker-compose.override.yaml` 会覆盖为 `build: .`，执行：
 
+```bash
 docker compose up -d --build
-
 ```
 
-  
+或：
 
-- Makefile 方式:
-
-  
-
-``` bash
-
-make up # 使用已构建镜像
-
-make buildup # 从源码构建并启动
-
-make down # 停止并删除容器
-
-make logs # 查看日志
-
+```bash
+make buildup
 ```
-5. 更新方式:
-```
+
+> 发布到生产时若不想在服务器上构建，可删除或重命名 `docker-compose.override.yaml`，仅保留拉取远程镜像的方式。
+
+**修改映射端口**
+
+编辑 `docker-compose.yaml` 中 `ports`，例如 `"8080:3000"` 表示宿主机 8080 → 容器 3000。
+
+**常用命令**
+
+| 命令 | 说明 |
+|------|------|
+| `docker compose up -d` / `make up` | 后台启动（拉取镜像） |
+| `docker compose up -d --build` / `make buildup` | 本地构建并启动 |
+| `docker compose logs -f` / `make logs` | 查看日志 |
+| `docker compose down` / `make down` | 停止并删除容器 |
+| `docker compose ps` | 查看状态 |
+
+**更新版本**
+
+```bash
 docker compose pull
 docker compose down
 docker compose up -d
 ```
 
+数据保存在宿主机 `./data`，更新镜像不会丢失订阅数据。
 
-6. 访问管理面板: `http://localhost:3000/`
+---
 
 ## 🧩 前后端分离开发
 
@@ -189,11 +350,11 @@ make frontend-dev
 make dev
 ```
 
-前端开发地址为 `http://localhost:5173`，通过 Vite proxy 访问后端 `http://localhost:3000`。
+前端开发地址为 `http://localhost:<FRONTEND_PORT>`（默认 5173），通过 Vite 代理访问后端 `http://localhost:<PORT>`（默认 3000）。
 
-> 端口统一在根目录 `.env` 中配置：`PORT`（后端）与 `FRONTEND_PORT`（前端）。`make dev`、`make backend-dev`、`make frontend-dev` 以及 Vite proxy 都会读取该配置；如需临时覆盖，可 `make dev BACKEND_PORT=3001 FRONTEND_PORT=5174`。
+> 端口在根目录 `.env` 中配置：`PORT`（后端）、`FRONTEND_PORT`（前端）。`make dev` 会读取该配置；临时覆盖示例：`make dev BACKEND_PORT=3001 FRONTEND_PORT=5174`。
 
-生产 Docker 镜像会自动构建 `frontend/dist`，并由后端托管静态资源。
+生产 Docker 镜像会在构建阶段执行 `npm run build`，由后端托管 `frontend/dist`（见 [部署教程](#-部署教程)）。
 
 ## 💾 数据库
 
@@ -276,20 +437,10 @@ make dev
 
 ## 🛠️ 技术栈
 
-- Node.js
-
-- Express
-
+- Vue 3 + Vite + Element Plus（管理端）
+- Node.js + Express（后端 API）
 - SQLite
-
-- Docker & Docker Compose
-
-- HTML5 / CSS3 / JavaScript (ES6+)
-
-- Bootstrap 5
-
-- Font Awesome
-
+- Docker / Docker Compose
 - SortableJS
   
 ## REF
