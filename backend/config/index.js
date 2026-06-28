@@ -12,9 +12,6 @@ const config = {
   // Session configuration
   sessionSecret: process.env.SESSION_SECRET || 'subscribe-manager-secret-key-change-in-production',
 
-  // Admin path
-  adminPath: process.env.ADMIN_PATH || 'admin',
-
   // Database path
   databasePath: process.env.DB_PATH || path.resolve(__dirname, '../../data/subscriptions.db'),
 

@@ -74,11 +74,6 @@ app.use(
     },
   }),
 );
-app.get("/config", (req, res) => {
-  res.json({
-    ADMIN_PATH: config.adminPath,
-  });
-});
 
 // 版本信息 API
 app.get("/version", (req, res) => {
@@ -114,23 +109,13 @@ async function startApp() {
     app.use("/api/auth", authRoutes);
 
     app.get("/", sendFrontendApp);
-    app.get(`/${config.adminPath}`, (_req, res) => {
-      res.redirect("/");
-    });
 
     // 注册路由
     app.use("/api", requireAuth, apiRoutes);
-    
-    // 订阅路由，排除管理路径
+
+    // 公开订阅路由：/:path、/:path/:format、/:path/nodes
     const subscriptionRoutes = require("./routes/subscriptionRoutes");
-    // 同时支持 /subscribe/path 和 /path 两种格式
-    app.use("/", (req, res, next) => {
-      // 如果路径以adminPath开头，跳过订阅路由
-      if (req.path.startsWith(`/${config.adminPath}`)) {
-        return next();
-      }
-      subscriptionRoutes(req, res, next);
-    });
+    app.use("/", subscriptionRoutes);
 
     // 全局错误处理
     app.use(errorHandler);
@@ -138,7 +123,6 @@ async function startApp() {
     // 启动服务器
     app.listen(config.port, () => {
       console.log(`服务器运行在 http://localhost:${config.port}`);
-      console.log(`管理面板路径: /${config.adminPath}`);
 
       // 如果是生产环境，添加安全提示
       if (config.nodeEnv === "production") {

@@ -83,7 +83,6 @@ cp .env.example .env
 ```ini
 # Required — change defaults in production
 SESSION_SECRET=use-a-long-random-string
-ADMIN_PATH=admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=use-a-strong-password
 
@@ -155,7 +154,7 @@ make backend-dev
 | Service | Port mapping | Purpose |
 |---------|--------------|---------|
 | `backend` | `BACKEND_PORT:BACKEND_PORT` | API, `/<path>` subscription output |
-| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | Admin UI (Nginx static app + reverse proxy for `/api`, `/config`, `/version`) |
+| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | Admin UI (Nginx static app + reverse proxy for `/api`, `/version`) |
 
 **Pull images from Docker Hub (recommended)**
 

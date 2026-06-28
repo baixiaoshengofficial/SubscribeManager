@@ -25,7 +25,6 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api': { target: backendTarget, changeOrigin: true },
-        '/config': { target: backendTarget, changeOrigin: true },
         '/version': { target: backendTarget, changeOrigin: true },
       },
     },

@@ -32,9 +32,8 @@ export const api = {
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   me: () => request('/api/auth/me'),
 
-  // version & config
+  // version
   version: () => request('/version'),
-  config: () => request('/config'),
 
   // subscriptions
   subscriptions: () => request('/api/subscriptions'),

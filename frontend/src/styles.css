@@ -331,6 +331,10 @@ html.dark body::after {
   padding: 32px 28px 80px;
 }
 
+.auth-loading {
+  min-height: 50vh;
+}
+
 /* ===== page header ===== */
 .page-header {
   margin-bottom: 36px;

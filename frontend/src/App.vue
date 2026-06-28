@@ -65,7 +65,8 @@
       </el-header>
 
       <el-main class="app-main">
-        <template v-if="!authed">
+        <div v-if="checking" class="auth-loading" v-loading="true" :element-loading-text="t('common.loading')"></div>
+        <template v-else-if="!authed">
           <LoginView @success="onLoggedIn" />
         </template>
         <template v-else>
@@ -90,6 +91,7 @@ import ProtocolGuideView from './views/ProtocolGuideView.vue';
 
 const { t, locale } = useI18n();
 const authed = ref(false);
+const checking = ref(true);
 const currentView = ref('dashboard');
 
 const currentLangLabel = computed(() => availableLocales.find((l) => l.value === locale.value)?.label || '简体中文');
@@ -125,6 +127,8 @@ onMounted(async () => {
     authed.value = true;
   } catch {
     authed.value = false;
+  } finally {
+    checking.value = false;
   }
 });
 </script>

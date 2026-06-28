@@ -113,7 +113,6 @@ cp .env.example .env
 ```ini
 # 必填：生产环境请修改默认值
 SESSION_SECRET=请改为随机长字符串
-ADMIN_PATH=admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=请改为强密码
 
@@ -185,7 +184,7 @@ make backend-dev
 | 服务 | 端口映射 | 用途 |
 |------|----------|------|
 | `backend` | `BACKEND_PORT:BACKEND_PORT` | API、`/<path>` 订阅输出 |
-| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | 管理界面（Nginx 静态页 + 反代 `/api`、`/config`、`/version`） |
+| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | 管理界面（Nginx 静态页 + 反代 `/api`、`/version`） |
 
 **使用 Docker Hub 镜像（推荐）**
 
