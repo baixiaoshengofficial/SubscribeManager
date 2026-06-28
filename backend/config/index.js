@@ -1,4 +1,7 @@
 const path = require('path');
+// 源码部署：加载根目录 .env 的应用配置（不覆盖已存在的环境变量，如 CLI 传入的 BACKEND_PORT）。
+// Docker 后端镜像无 .env 文件，dotenv 自动空转，变量由 compose env_file 注入。
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 const { BACKEND_PORT } = require('../../config/ports.cjs');
 
 const config = {

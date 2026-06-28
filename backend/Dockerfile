@@ -11,5 +11,5 @@ COPY backend/ ./
 COPY config ../config
 COPY version.json ../version.json
 
-VOLUME ["/app/data"]
+VOLUME ["/app/backend/data"]
 CMD ["node", "index.js"]

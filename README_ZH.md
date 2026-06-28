@@ -88,7 +88,10 @@ Hysteria2, Tuic
 
 ## 🚀 部署教程
 
-SubscribeManager 生产环境由 **后端统一对外提供服务**：先构建 `frontend/dist`，再由 `backend` 托管静态页面与 API。以下三种方式任选其一。
+SubscribeManager 提供两种部署形态：
+
+- **源码部署**：单个 Node 进程，`backend` 同时托管 API 与构建好的 `frontend/dist`，前后端同端口。
+- **Docker 部署（前后端分离）**：`backend`（API + 订阅输出）与 `frontend`（Nginx 托管静态页并反代 `/api`）分别为独立容器、独立端口，由 Docker Compose 编排。
 
 ### 准备工作
 
@@ -96,8 +99,7 @@ SubscribeManager 生产环境由 **后端统一对外提供服务**：先构建 
 
 | 方式 | 要求 |
 |------|------|
-| 源码编译 | Node.js **20+**、npm |
-| Docker 单容器 | Docker **20+** |
+| 源码部署 | Node.js **20+**、npm |
 | Docker Compose | Docker **20+**、Docker Compose **v2+** |
 
 **配置环境变量**
@@ -115,62 +117,45 @@ ADMIN_PATH=admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=请改为强密码
 
-# 后端监听端口（Node / Docker 容器内）
-BACKEND_PORT=3000
-# 对外访问端口（开发：Vite；Docker：宿主机映射）
-FRONTEND_PORT=3000
+# 后端端口（API、订阅输出）
+BACKEND_PORT=5100
+# 前端端口（开发为 Vite；Docker 为 Nginx 容器）
+FRONTEND_PORT=5101
 
-# 数据库路径
-# 源码部署：相对项目根目录
+# 数据库路径（相对运行目录）。源码与 Docker 共用此值，
+# Docker 会把宿主机 ./data 挂到容器对应位置，宿主机 ./data 下可见 db 文件
 DB_PATH=./data/subscriptions.db
-# Docker 部署：容器内固定为下方路径，通过卷挂载到宿主机 ./data
 
-# 可选：远程 Subconverter 无法访问本机时，填写公网可访问地址
+# HTTPS 部署时设为 true；本地 / Docker HTTP 保持 false
+# COOKIE_SECURE=false
+
+# 可选：公网可访问的后端地址（远程 Subconverter 拉节点 / 订阅链接展示）
 # PUBLIC_BASE_URL=https://sub.example.com
 ```
 
-创建数据目录（源码部署时需要；Compose / `docker run` 会在首次启动时自动创建卷目录）：
+> 开发（`make dev`）与 Docker 会用到两个端口（前端 `FRONTEND_PORT`、后端 `BACKEND_PORT`）。源码**生产**部署时由单个 Node 进程在 `BACKEND_PORT` 上托管全部，`FRONTEND_PORT` 仅对 Vite 开发服务器生效。
 
-```bash
-mkdir -p data
-```
-
-**访问地址**
-
-部署完成后打开：
-
-```text
-http://<主机>:<FRONTEND_PORT>/
-```
-
-源码部署时通常 `FRONTEND_PORT` 与 `BACKEND_PORT` 相同；Docker 可分别配置（例如宿主机 `5101` → 容器 `5100`）。
+**访问地址**：部署完成后浏览器打开 `http://<主机>:<FRONTEND_PORT>/`。
 
 ---
 
-### 方式一：从源码编译部署
+### 方式一：从源码部署
 
-适合本机或 VPS 直接运行 Node，无需 Docker。
+适合本机或 VPS 直接运行 Node，无需 Docker。后端构建并托管前端，单进程对外服务。
 
 ```bash
 # 1. 获取代码
 git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
 cd SubscribeManager
 
-# 2. 配置环境变量（见上文）
+# 2. 配置环境变量（见上文），源码部署建议两端口相同
 cp .env.example .env
-# 编辑 .env
 
 # 3. 安装依赖并构建前端
 make install
 make frontend-build
 
 # 4. 启动后端（读取根目录 .env，托管 frontend/dist）
-cd backend && npm start
-```
-
-或使用 Makefile 快捷命令（需已执行 `make install` 与 `make frontend-build`）：
-
-```bash
 make backend-dev
 ```
 
@@ -182,98 +167,29 @@ make backend-dev
 | `make frontend-build` | 构建前端到 `frontend/dist` |
 | `make backend-dev` | 启动生产后端（端口读 `.env` 的 `BACKEND_PORT`） |
 | `make test` | 运行后端测试 |
-| `make check` | 测试 + 前端构建校验 |
+| `make test-frontend` | 运行前端测试（vitest） |
+| `make check` | 前后端测试 + 前端构建校验 |
 
 **说明**
 
-- 修改前端代码后需重新执行 `make frontend-build` 再重启后端。
-- 数据库默认写入 `./data/subscriptions.db`（由 `DB_PATH` 控制）。
-- 本地**开发**（前后端热更新、分离端口）请见下文 [前后端分离开发](#-前后端分离开发)，与生产部署不同。
+- 修改前端代码后需重新 `make frontend-build` 再重启后端。
+- 数据库默认写入 `./data/subscriptions.db`（由 `DB_PATH` 控制，相对启动目录）。
+- 本地**开发**（热更新、前后端分离端口）见下文 [前后端分离开发](#-前后端分离开发)。
 
 ---
 
-### 方式二：Docker 单容器部署
+### 方式二：Docker Compose 部署（推荐）
 
-适合只需一个容器、自行用 `docker run` 管理的场景。镜像内已包含构建好的前端与后端。
+`docker-compose.yaml` 启动 **backend** 和 **frontend** 两个服务，各映射一个端口：
 
-**构建镜像**
-
-```bash
-git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
-cd SubscribeManager
-cp .env.example .env
-# 编辑 .env
-
-docker build -t subscribe-manager:local .
-```
-
-**运行容器**
-
-```bash
-mkdir -p data
-
-docker run -d \
-  --name subscribe-manager \
-  --restart unless-stopped \
-  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
-  -v "$(pwd)/data:/app/data" \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -e BACKEND_PORT="${BACKEND_PORT}" \
-  -e DB_PATH=/app/data/subscriptions.db \
-  subscribe-manager:local
-```
-
-**自定义端口**（宿主机 5101 → 容器 5100）：
-
-```bash
-# .env 示例：BACKEND_PORT=5100  FRONTEND_PORT=5101
-docker run -d \
-  --name subscribe-manager \
-  --restart unless-stopped \
-  -p 5101:5100 \
-  -v "$(pwd)/data:/app/data" \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -e BACKEND_PORT=5100 \
-  -e DB_PATH=/app/data/subscriptions.db \
-  subscribe-manager:local
-```
-
-**使用 Docker Hub 预构建镜像**（无需本地 `docker build`）：
-
-```bash
-docker pull knighttools/subscribe-manager:latest
-
-docker run -d \
-  --name subscribe-manager \
-  --restart unless-stopped \
-  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
-  -v "$(pwd)/data:/app/data" \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -e BACKEND_PORT="${BACKEND_PORT}" \
-  -e DB_PATH=/app/data/subscriptions.db \
-  knighttools/subscribe-manager:latest
-```
-
-**常用运维命令**
-
-```bash
-docker logs -f subscribe-manager
-docker stop subscribe-manager
-docker rm subscribe-manager
-```
-
----
-
-### 方式三：Docker Compose 部署
-
-适合生产环境长期运行，配置集中在 `docker-compose.yaml`，便于迁移与升级。
+| 服务 | 端口映射 | 用途 |
+|------|----------|------|
+| `backend` | `BACKEND_PORT:BACKEND_PORT` | API、`/<path>` 订阅输出 |
+| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | 管理界面（Nginx 静态页 + 反代 `/api`、`/config`、`/version`） |
 
 **使用 Docker Hub 镜像（推荐）**
 
-`docker-compose.yaml` 默认拉取 `knighttools/subscribe-manager:latest`：
+默认拉取 `knighttools/subscribe-manager-backend` 与 `knighttools/subscribe-manager-frontend`：
 
 ```bash
 git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
@@ -281,42 +197,22 @@ cd SubscribeManager
 cp .env.example .env
 # 编辑 .env
 
-mkdir -p data
-docker compose up -d
-```
-
-等价 Makefile 命令：
-
-```bash
-make up
+docker compose up -d      # 等价 make up
 ```
 
 **从源码本地构建镜像**
 
-仓库内 `docker-compose.override.yaml` 会覆盖为 `build: .`，执行：
+仓库内 `docker-compose.override.yaml` 会让两个服务改为本地 `build`（分别用 `backend/Dockerfile`、`frontend/Dockerfile`）：
 
 ```bash
-docker compose up -d --build
+docker compose up -d --build   # 等价 make buildup
 ```
 
-或：
+> 生产服务器若只想拉取远程镜像、不在本机构建，可删除或重命名 `docker-compose.override.yaml`。
 
-```bash
-make buildup
-```
+**访问与端口**
 
-> 发布到生产时若不想在服务器上构建，可删除或重命名 `docker-compose.override.yaml`，仅保留拉取远程镜像的方式。
-
-**修改映射端口**
-
-在 `.env` 中设置 `FRONTEND_PORT`（宿主机）与 `BACKEND_PORT`（容器内监听）。
-
-Compose 启动 **backend**、**frontend** 两个服务，各映射一个端口：
-
-- `BACKEND_PORT:BACKEND_PORT` — API 与订阅输出（如 `http://localhost:5100/devtest`）
-- `FRONTEND_PORT:FRONTEND_PORT` — 管理界面（如 `http://localhost:5101/`）
-
-浏览器请访问 **FRONTEND_PORT**；订阅链接由后端 `BACKEND_PORT` 提供（可在 `.env` 设置 `PUBLIC_BASE_URL` 供外网 Subconverter 使用）。
+浏览器访问 **FRONTEND_PORT**（如 `http://localhost:5101/`）。订阅链接由后端 **BACKEND_PORT** 提供；若前端与后端不在同机或需对外暴露，请在 `.env` 设置 `PUBLIC_BASE_URL`，供 Subconverter 和订阅链接展示使用。
 
 **常用命令**
 

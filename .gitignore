@@ -2,8 +2,13 @@
 /backend/node_modules
 /frontend/node_modules
 /frontend/dist
+
 .env
-/data/subscriptions.db
+
+# SQLite runtime data (any location)
+**/data/*.db
+**/data/*.db-journal
+
 /.codebuddy
 .DS_Store
 coverage

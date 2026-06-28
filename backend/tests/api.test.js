@@ -476,6 +476,8 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .post('/api/subscriptions')
+        .set('Content-Type', 'application/json')
+        .send({})
         .expect(400);
 
       expect(response.body.success).toBe(false);

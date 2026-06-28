@@ -19,7 +19,6 @@ const errorHandler = require("./middleware/errorHandler");
 const sessionService = require("./services/sessionService");
 const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
 const frontendIndexPath = path.join(frontendDistPath, "index.html");
-const serveFrontend = process.env.SERVE_FRONTEND !== "false";
 
 async function requireAuth(req, res, next) {
   const isApiRequest = req.originalUrl.startsWith("/api/");
@@ -61,9 +60,8 @@ app.set("trust proxy", 1);
 app.use(languageHandler);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-if (serveFrontend) {
-  app.use(express.static(frontendDistPath));
-}
+// 源码部署时托管已构建的前端；Docker 后端镜像无 dist，此处自动空转（前端由 Nginx 容器提供）
+app.use(express.static(frontendDistPath));
 app.use(
   session({
     secret: config.sessionSecret,
@@ -115,12 +113,10 @@ async function startApp() {
     // 前端分离后，认证接口仅通过 API 暴露。
     app.use("/api/auth", authRoutes);
 
-    if (serveFrontend) {
-      app.get("/", sendFrontendApp);
-      app.get(`/${config.adminPath}`, (_req, res) => {
-        res.redirect("/");
-      });
-    }
+    app.get("/", sendFrontendApp);
+    app.get(`/${config.adminPath}`, (_req, res) => {
+      res.redirect("/");
+    });
 
     // 注册路由
     app.use("/api", requireAuth, apiRoutes);

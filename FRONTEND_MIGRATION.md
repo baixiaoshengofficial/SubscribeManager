@@ -2,8 +2,9 @@
 
 ```text
 SubscribeManager/
-├── frontend/   # Vue 3 + Vite 管理端
+├── frontend/   # Vue 3 + Vite 管理端（含 Nginx Dockerfile）
 ├── backend/    # Node.js + Express API / sqlite / 订阅输出
+├── config/     # 端口解析（ports.cjs，前后端共用 .env 唯一来源）
 ├── data/       # sqlite 数据文件
 ├── docker-compose.yaml
 └── Makefile
@@ -16,12 +17,15 @@ make dev                    # 一键启动前后端
 make install                # 安装依赖
 make backend-dev            # 仅后端
 make frontend-dev           # 仅前端
+make test                   # 后端测试（jest）
+make test-frontend          # 前端测试（vitest）
+make check                  # 前后端测试 + 前端构建校验
 ```
 
-`.env` 端口变量：
+`.env` 端口变量（唯一来源，由 `config/ports.cjs` 解析）：
 
 - `BACKEND_PORT` — 后端（API、订阅链接）
-- `FRONTEND_PORT` — 管理界面（Vite 开发服务器）
+- `FRONTEND_PORT` — 管理界面（Vite 开发服务器 / Docker 的 Nginx）
 
 ## Docker 部署（前后端分离）
 

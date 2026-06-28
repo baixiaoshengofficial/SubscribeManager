@@ -1,4 +1,4 @@
-# 前后端分离：后端 API + 订阅输出
+# 前后端分离：backend(API/订阅) + frontend(Nginx 静态页 + 代理)
 services:
   backend:
     image: knighttools/subscribe-manager-backend:latest
@@ -7,23 +7,16 @@ services:
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
-      - ./data:/app/data
+      # 对齐 .env 的 DB_PATH=./data/...（容器 WORKDIR=/app/backend），宿主机 ./data 可见
+      - ./data:/app/backend/data
     env_file:
       - .env
-    environment:
-      NODE_ENV: production
-      DB_PATH: /app/data/subscriptions.db
-      BACKEND_PORT: ${BACKEND_PORT}
-      SERVE_FRONTEND: "false"
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${BACKEND_PORT}/version >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
-    networks:
-      - subscribe-manager-network
 
   frontend:
     image: knighttools/subscribe-manager-frontend:latest
@@ -34,20 +27,8 @@ services:
     env_file:
       - .env
     environment:
-      FRONTEND_PORT: ${FRONTEND_PORT}
+      # 容器内通过服务名访问后端，不能用 localhost
       BACKEND_UPSTREAM: http://backend:${BACKEND_PORT}
     depends_on:
       backend:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${FRONTEND_PORT}/ >/dev/null || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    networks:
-      - subscribe-manager-network
-
-networks:
-  subscribe-manager-network:
-    driver: bridge

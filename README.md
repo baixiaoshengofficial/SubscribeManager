@@ -58,7 +58,10 @@ Provides an intuitive web interface and supports multiple proxy protocols and su
 
 ## 🚀 Deployment Guide
 
-In production, the **backend serves both the API and the built admin UI** (`frontend/dist`). Choose one of the following deployment methods.
+SubscribeManager supports two deployment shapes:
+
+- **Source deploy**: a single Node process where `backend` serves both the API and the built `frontend/dist` on one port.
+- **Docker deploy (split)**: `backend` (API + subscription output) and `frontend` (Nginx serving the static app and reverse-proxying `/api`) run as separate containers on separate ports, orchestrated by Docker Compose.
 
 ### Prerequisites
 
@@ -67,7 +70,6 @@ In production, the **backend serves both the API and the built admin UI** (`fron
 | Method | Requirements |
 |--------|----------------|
 | Build from source | Node.js **20+**, npm |
-| Docker (single container) | Docker **20+** |
 | Docker Compose | Docker **20+**, Docker Compose **v2+** |
 
 **Environment variables**
@@ -85,61 +87,45 @@ ADMIN_PATH=admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=use-a-strong-password
 
-# Service ports
-BACKEND_PORT=3000
-FRONTEND_PORT=3000
+# Backend port (API, subscription output)
+BACKEND_PORT=5100
+# Frontend port (Vite in dev; Nginx container in Docker)
+FRONTEND_PORT=5101
 
-# Database path
-# Source deploy: relative to project root
+# Database path (relative to the run directory). Shared by source and Docker;
+# Docker mounts host ./data into the container so the db is visible under ./data
 DB_PATH=./data/subscriptions.db
-# Docker: fixed inside container; mount host ./data to /app/data
 
-# Optional: public URL when remote Subconverter cannot reach localhost
+# Set to true behind HTTPS; keep false for local / Docker HTTP
+# COOKIE_SECURE=false
+
+# Optional: public backend URL (remote Subconverter / subscription link display)
 # PUBLIC_BASE_URL=https://sub.example.com
 ```
 
-Create the data directory for source deployments (Compose / `docker run` create the volume directory on first start):
+> Dev (`make dev`) and Docker use both ports (frontend on `FRONTEND_PORT`, backend on `BACKEND_PORT`). For a source **production** deploy the single Node process serves everything on `BACKEND_PORT`, and `FRONTEND_PORT` only affects the Vite dev server.
 
-```bash
-mkdir -p data
-```
-
-**Access URL**
-
-After deployment, open:
-
-```text
-http://<host>:<FRONTEND_PORT>/
-```
-
-For source deploy, `FRONTEND_PORT` and `BACKEND_PORT` are usually the same. Docker can map them differently (e.g. host `5101` → container `5100`).
+**Access URL**: after deployment, open `http://<host>:<FRONTEND_PORT>/`.
 
 ---
 
 ### Option 1: Build from source
 
-Run Node directly on the host or a VPS without Docker.
+Run Node directly on the host or a VPS without Docker. The backend builds and serves the frontend as a single process.
 
 ```bash
 # 1. Clone
 git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
 cd SubscribeManager
 
-# 2. Configure .env (see above)
+# 2. Configure .env (use the same value for both ports here)
 cp .env.example .env
-# edit .env
 
 # 3. Install dependencies and build frontend
 make install
 make frontend-build
 
 # 4. Start backend (reads root .env, serves frontend/dist)
-cd backend && npm start
-```
-
-Or use Makefile shortcuts (after `make install` and `make frontend-build`):
-
-```bash
 make backend-dev
 ```
 
@@ -151,97 +137,29 @@ make backend-dev
 | `make frontend-build` | Build frontend to `frontend/dist` |
 | `make backend-dev` | Start production backend (port from `BACKEND_PORT` in `.env`) |
 | `make test` | Run backend tests |
-| `make check` | Tests + frontend build verification |
+| `make test-frontend` | Run frontend tests (vitest) |
+| `make check` | Backend + frontend tests + frontend build verification |
 
 **Notes**
 
 - After frontend changes, run `make frontend-build` and restart the backend.
-- Database defaults to `./data/subscriptions.db` (controlled by `DB_PATH`).
+- Database defaults to `./data/subscriptions.db` (controlled by `DB_PATH`, relative to the run directory).
 - For **local development** with hot reload and split ports, see [Frontend / backend development](#-frontend--backend-development) below.
 
 ---
 
-### Option 2: Docker (single container)
+### Option 2: Docker Compose (recommended)
 
-Use when you prefer `docker run` without Compose. The image includes the built frontend and backend.
+`docker-compose.yaml` starts **backend** and **frontend** as two services, each mapping one port:
 
-**Build image**
+| Service | Port mapping | Purpose |
+|---------|--------------|---------|
+| `backend` | `BACKEND_PORT:BACKEND_PORT` | API, `/<path>` subscription output |
+| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | Admin UI (Nginx static app + reverse proxy for `/api`, `/config`, `/version`) |
 
-```bash
-git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
-cd SubscribeManager
-cp .env.example .env
-# edit .env
+**Pull images from Docker Hub (recommended)**
 
-docker build -t subscribe-manager:local .
-```
-
-**Run container**
-
-```bash
-mkdir -p data
-
-docker run -d \
-  --name subscribe-manager \
-  --restart unless-stopped \
-  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
-  -v "$(pwd)/data:/app/data" \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -e BACKEND_PORT="${BACKEND_PORT}" \
-  -e DB_PATH=/app/data/subscriptions.db \
-  subscribe-manager:local
-```
-
-**Custom ports** (host 5101 → container 5100):
-
-```bash
-docker run -d \
-  --name subscribe-manager \
-  --restart unless-stopped \
-  -p 5101:5100 \
-  -v "$(pwd)/data:/app/data" \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -e BACKEND_PORT=5100 \
-  -e DB_PATH=/app/data/subscriptions.db \
-  subscribe-manager:local
-```
-
-**Operations**
-
-```bash
-docker logs -f subscribe-manager    # logs
-docker stop subscribe-manager       # stop
-docker rm subscribe-manager         # remove container
-```
-
-**Pre-built image from Docker Hub** (no local build):
-
-```bash
-docker pull knighttools/subscribe-manager:latest
-
-docker run -d \
-  --name subscribe-manager \
-  --restart unless-stopped \
-  -p "${FRONTEND_PORT}:${BACKEND_PORT}" \
-  -v "$(pwd)/data:/app/data" \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -e BACKEND_PORT="${BACKEND_PORT}" \
-  -e DB_PATH=/app/data/subscriptions.db \
-  knighttools/subscribe-manager:latest
-```
-
----
-
-### Option 3: Docker Compose
-
-Recommended for long-running production deployments. Configuration lives in `docker-compose.yaml`.
-
-**Pull image from Docker Hub (recommended)**
-
-`docker-compose.yaml` defaults to `knighttools/subscribe-manager:latest`:
+Defaults to `knighttools/subscribe-manager-backend` and `knighttools/subscribe-manager-frontend`:
 
 ```bash
 git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
@@ -249,46 +167,28 @@ cd SubscribeManager
 cp .env.example .env
 # edit .env
 
-mkdir -p data
-docker compose up -d
+docker compose up -d      # same as: make up
 ```
 
-Makefile equivalent:
+**Build images locally from source**
+
+`docker-compose.override.yaml` switches both services to a local `build` (via `backend/Dockerfile` and `frontend/Dockerfile`):
 
 ```bash
-make up
+docker compose up -d --build   # same as: make buildup
 ```
 
-**Build image locally from source**
+> On production servers that should only pull pre-built images, remove or rename `docker-compose.override.yaml`.
 
-`docker-compose.override.yaml` sets `build: .`:
+**Access & ports**
 
-```bash
-docker compose up -d --build
-```
-
-Or:
-
-```bash
-make buildup
-```
-
-> For production servers, remove or rename `docker-compose.override.yaml` if you only want to pull pre-built images.
-
-**Change published port**
-
-Compose runs **backend** and **frontend** as separate services:
-
-- `BACKEND_PORT:BACKEND_PORT` — API and subscription output
-- `FRONTEND_PORT:FRONTEND_PORT` — admin UI (Nginx + `/api` proxy)
-
-Open **FRONTEND_PORT** in the browser. Subscription URLs use **BACKEND_PORT** (set `PUBLIC_BASE_URL` in `.env` for remote Subconverter).
+Open **FRONTEND_PORT** in the browser (e.g. `http://localhost:5101/`). Subscription links are served by the backend on **BACKEND_PORT**; if frontend and backend are not co-located or must be exposed publicly, set `PUBLIC_BASE_URL` in `.env` for Subconverter and link display.
 
 **Common commands**
 
 | Command | Description |
 |---------|-------------|
-| `docker compose up -d` / `make up` | Start in background (pull image) |
+| `docker compose up -d` / `make up` | Start in background (pull images) |
 | `docker compose up -d --build` / `make buildup` | Build locally and start |
 | `docker compose logs -f` / `make logs` | Follow logs |
 | `docker compose down` / `make down` | Stop and remove containers |
