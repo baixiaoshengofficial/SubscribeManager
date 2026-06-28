@@ -24,10 +24,10 @@ Provides an intuitive web interface and supports multiple proxy protocols and su
 
 ## 🌐 Live Demo
 
-[SubscribeManager Sponsor By FOSSVPS](https://subscribe.baixiaosheng.de/admin)
+[SubscribeManager Sponsor By FOSSVPS](https://subscribe.baixiaosheng.de
+)
 **username:** `admin`
 **password:** `admin`
-**path:** `admin`
 
 ## ✨ Features
 
