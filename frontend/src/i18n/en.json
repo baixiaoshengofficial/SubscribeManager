@@ -71,6 +71,7 @@
     "password": "Password",
     "submit": "Sign In",
     "submitting": "Signing in...",
+    "success": "Login successful",
     "error": "Incorrect username or password",
     "request_error": "Login request failed, please try again"
   },

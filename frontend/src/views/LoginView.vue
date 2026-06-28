@@ -49,6 +49,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import { api } from '../api/client';
 
@@ -73,9 +74,10 @@ async function submit() {
   loading.value = true;
   try {
     await api.login(form);
+    ElMessage.success(t('login.success'));
     emit('success');
-  } catch {
-    // keep form for retry
+  } catch (err) {
+    ElMessage.error(err?.message || t('login.request_error'));
   } finally {
     loading.value = false;
   }
