@@ -7,7 +7,6 @@ const { initializeDatabase } = require("./database");
 const config = require("./config");
 const versionInfo = require("../version.json");
 const { getPublicBaseUrl } = require("./utils/converters/urlHandler");
-const { isSubscriptionRequestPath } = require("./utils/subscriptionPath");
 
 // 使用原有的简单路由
 const apiRoutes = require("./routes/api");
@@ -117,22 +116,9 @@ async function startApp() {
     // 注册路由
     app.use("/api", requireAuth, apiRoutes);
 
-    // 公开订阅路由：仅匹配 /:path、/:path/:format（排除 index.html 等）
+    // 公开订阅路由：/:path、/:path/:format、/:path/nodes
     const subscriptionRoutes = require("./routes/subscriptionRoutes");
-    app.use("/", (req, res, next) => {
-      if (!isSubscriptionRequestPath(req.path)) {
-        return next();
-      }
-      return subscriptionRoutes(req, res, next);
-    });
-
-    // 源码部署：其余 GET 走 SPA（Docker 后端无 dist 时返回提示）
-    app.get(/^\/(?!api(?:\/|$)).*/, (req, res, next) => {
-      if (isSubscriptionRequestPath(req.path)) {
-        return next();
-      }
-      return sendFrontendApp(req, res, next);
-    });
+    app.use("/", subscriptionRoutes);
 
     // 全局错误处理
     app.use(errorHandler);

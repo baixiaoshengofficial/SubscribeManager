@@ -20,20 +20,8 @@ server {
         proxy_set_header Host $host;
     }
 
-    location /assets/ {
-        try_files $uri =404;
-    }
-
-    # 精确匹配优先，避免 SPA 回退路径被当成订阅
-    location = / {
-        try_files /index.html =404;
-    }
-
-    location = /index.html {
-        try_files /index.html =404;
-    }
-
-    # 订阅输出：/:path 与 /:path/clash 等（排除 api、version、assets）
+    # 订阅输出：与管理页同域，反代到后端 /:path、/:path/clash 等
+    # 须先 try_files，避免 / → /index.html 被当成订阅 path
     location ~ ^/(?!api(?:/|$)|version(?:/|$)|assets(?:/|$))[^/]+(?:/(?:v2ray|surge|clash|shadowsocks|nodes))?$ {
         try_files $uri @subscription_backend;
     }
