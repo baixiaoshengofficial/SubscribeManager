@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': { target: backendTarget, changeOrigin: true },
         '/version': { target: backendTarget, changeOrigin: true },
-        '^/(?!api(?:/|$)|version(?:/|$)|assets(?:/|$))[^/]+(?:/(?:v2ray|surge|clash|shadowsocks|nodes))?$': {
+        '^/(?!api(?:/|$)|version(?:/|$)|assets(?:/|$)|index\\.html$)[^/]+(?:/(?:v2ray|surge|clash|shadowsocks|nodes))?$': {
           target: backendTarget,
           changeOrigin: true,
         },
