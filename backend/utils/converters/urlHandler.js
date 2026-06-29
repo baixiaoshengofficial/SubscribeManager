@@ -158,21 +158,13 @@ function formatNodesForSubconvertUrl(nodeContent) {
 
 /**
  * 解析传给 Subconverter 的订阅源
- * - 公网可访问时：使用订阅 URL（通用链接格式 /path）
- * - 本地/内网时：将节点链接用 | 拼接后放入 url 参数
+ * 有节点内容时始终用 | 拼接内联传递（Subconverter 拉取通用 /path URL 常失败）
  */
 function resolveSubconvertDirectUrl(subscriptionUrl, nodeContent) {
-  if (!nodeContent?.trim()) return subscriptionUrl;
-  if (subscriptionUrl) {
-    try {
-      if (!isLocalUrl(subscriptionUrl) && !isPrivateOrLocalHost(new URL(subscriptionUrl).hostname)) {
-        return subscriptionUrl;
-      }
-    } catch {
-      // 使用节点内容回退
-    }
+  if (nodeContent?.trim()) {
+    return formatNodesForSubconvertUrl(nodeContent);
   }
-  return formatNodesForSubconvertUrl(nodeContent);
+  return subscriptionUrl || '';
 }
 
 function getPublicBaseUrl(requestBaseUrl) {
