@@ -104,7 +104,7 @@ DB_PATH=./data/subscriptions.db
 # HTTPS 部署时设为 true；本地 / Docker HTTP 保持 false
 # COOKIE_SECURE=false
 
-# 可选：公网可访问的后端地址（远程 Subconverter 拉节点 / 订阅链接展示）
+# 可选：仅当远程 Subconverter 无法访问当前域名时，指定可被外网拉取的后端地址
 # PUBLIC_BASE_URL=https://sub.example.com
 ```
 
@@ -163,7 +163,7 @@ make backend-dev
 | 服务         | 端口映射                          | 用途                                     |
 | ---------- | ----------------------------- | -------------------------------------- |
 | `backend`  | `BACKEND_PORT:BACKEND_PORT`   | API、`/<path>` 订阅输出                     |
-| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | 管理界面（Nginx 静态页 + 反代 `/api`、`/version`） |
+| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | 管理界面（Nginx 静态页 + 反代 `/api`、`/version`、订阅路径） |
 
 
 **使用 Docker Hub 镜像（推荐）**
@@ -191,7 +191,7 @@ docker compose up -d --build   # 等价 make buildup
 
 **访问与端口**
 
-浏览器访问 **FRONTEND_PORT**（如 `http://localhost:5101/`）。订阅链接由后端 **BACKEND_PORT** 提供；若前端与后端不在同机或需对外暴露，请在 `.env` 设置 `PUBLIC_BASE_URL`，供 Subconverter 和订阅链接展示使用。
+浏览器访问 **FRONTEND_PORT**（如 `http://localhost:5101/`）。订阅链接与管理页**同域**，直接在域名后加路径即可（如 `https://你的域名/my-sub/clash`）；前端 Nginx 会把订阅路径反代到后端，无需额外配置。
 
 **常用命令**
 

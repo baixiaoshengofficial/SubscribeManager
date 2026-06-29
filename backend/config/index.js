@@ -22,6 +22,9 @@ const config = {
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin',
 
+  // Public backend URL for subscription links (optional; falls back to request Host)
+  publicBaseUrl: process.env.PUBLIC_BASE_URL?.trim().replace(/\/$/, '') || null,
+
   // Language
   defaultLanguage: process.env.DEFAULT_LANGUAGE || 'zh-CN',
 

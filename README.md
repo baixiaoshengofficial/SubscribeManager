@@ -98,7 +98,7 @@ DB_PATH=./data/subscriptions.db
 # Set to true behind HTTPS; keep false for local / Docker HTTP
 # COOKIE_SECURE=false
 
-# Optional: public backend URL (remote Subconverter / subscription link display)
+# Optional: only if remote Subconverter cannot reach your public domain
 # PUBLIC_BASE_URL=https://sub.example.com
 ```
 
@@ -154,7 +154,7 @@ make backend-dev
 | Service | Port mapping | Purpose |
 |---------|--------------|---------|
 | `backend` | `BACKEND_PORT:BACKEND_PORT` | API, `/<path>` subscription output |
-| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | Admin UI (Nginx static app + reverse proxy for `/api`, `/version`) |
+| `frontend` | `FRONTEND_PORT:FRONTEND_PORT` | Admin UI (Nginx static app + reverse proxy for `/api`, `/version`, subscription paths) |
 
 **Pull images from Docker Hub (recommended)**
 
@@ -181,7 +181,7 @@ docker compose up -d --build   # same as: make buildup
 
 **Access & ports**
 
-Open **FRONTEND_PORT** in the browser (e.g. `http://localhost:5101/`). Subscription links are served by the backend on **BACKEND_PORT**; if frontend and backend are not co-located or must be exposed publicly, set `PUBLIC_BASE_URL` in `.env` for Subconverter and link display.
+Open **FRONTEND_PORT** in the browser (e.g. `http://localhost:5101/`). Subscription links use the **same origin as the admin page** plus the path (e.g. `https://your.domain/my-sub/clash`); the frontend Nginx container proxies those paths to the backend. No extra URL config is required.
 
 **Common commands**
 

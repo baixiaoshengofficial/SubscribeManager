@@ -135,7 +135,8 @@ describe('Subscription Routes', () => {
       expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
       expect(response.text).toBe(`\uFEFF${clashContent}`);
       expect(convertMock).toHaveBeenCalledWith(mockContent, 'clash', expect.objectContaining({
-        subscriptionUrl: 'http://localhost:3000/test-subscription'
+        subscriptionUrl: expect.stringMatching(/\/test-subscription$/),
+        realBaseUrl: expect.stringMatching(/^https?:\/\//),
       }));
     });
   });

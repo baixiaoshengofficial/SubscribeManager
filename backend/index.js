@@ -6,6 +6,7 @@ const app = express();
 const { initializeDatabase } = require("./database");
 const config = require("./config");
 const versionInfo = require("../version.json");
+const { getPublicBaseUrl } = require("./utils/converters/urlHandler");
 
 // 使用原有的简单路由
 const apiRoutes = require("./routes/api");
@@ -77,10 +78,12 @@ app.use(
 
 // 版本信息 API
 app.get("/version", (req, res) => {
+  const requestBase = `${req.protocol}://${req.get("host")}`;
   res.json({
     version: versionInfo.version,
     name: versionInfo.name,
-    fullTag: `${versionInfo.tagPrefix}${versionInfo.version}`
+    fullTag: `${versionInfo.tagPrefix}${versionInfo.version}`,
+    publicBaseUrl: getPublicBaseUrl(requestBase),
   });
 });
 

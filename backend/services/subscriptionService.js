@@ -63,16 +63,9 @@ async function generateSubscriptionContent(path) {
     ORDER BY node_order ASC, id ASC
   `, [subscription.id]);
 
-  // 构建当前订阅的完整 URL（用于 Subconvert API）
-  const protocol = process.env.PROTOCOL || 'http';
-  const host = process.env.HOST || 'localhost';
-  const port = config.port;
-  const subscriptionUrl = `${protocol}://${host}:${port}/${path}`;
-
   // 生成订阅内容
   return {
     nodes: nodes.map(node => node.original_link).join('\n'),
-    subscriptionUrl: subscriptionUrl,
     config: {
       subconvertApi: subscription.subconvert_url,
       customTemplate: subscription.custom_template,

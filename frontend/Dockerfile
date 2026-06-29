@@ -6,8 +6,6 @@ COPY frontend/package*.json ./frontend/
 WORKDIR /app/frontend
 RUN npm install
 COPY frontend/ ./
-ARG VITE_BACKEND_ORIGIN
-ENV VITE_BACKEND_ORIGIN=${VITE_BACKEND_ORIGIN}
 RUN npm run build
 
 FROM nginx:1.27-alpine

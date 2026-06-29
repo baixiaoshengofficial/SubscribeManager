@@ -187,7 +187,6 @@ describe('SubscriptionService', () => {
       );
       expect(result).toEqual({
         nodes: 'ss://server1:8388\nvmess://eyJ2IjoiV...',
-        subscriptionUrl: 'http://localhost:3000/test',
         config: {
           subconvertApi: undefined,
           customTemplate: undefined,
@@ -236,7 +235,6 @@ describe('SubscriptionService', () => {
 
       expect(result).toEqual({
         nodes: '',
-        subscriptionUrl: 'http://localhost:3000/test',
         config: {
           subconvertApi: undefined,
           customTemplate: undefined,

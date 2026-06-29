@@ -1,12 +1,8 @@
 /**
- * 订阅链接应始终指向后端（提供节点内容），而非 Vite 开发服务器。
- * 生产环境前后端同域时回退为当前 origin。
+ * 订阅链接与管理页同域：origin + /path（Docker 下由 Nginx 反代到后端）。
+ * 本地开发前后端不同端口时，指向 BACKEND_PORT。
  */
 export function getSubscriptionOrigin() {
-  const configured = import.meta.env.VITE_BACKEND_ORIGIN;
-  if (configured) {
-    return configured.replace(/\/$/, '');
-  }
   if (import.meta.env.PROD) {
     return window.location.origin;
   }

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { generateSubscriptionContent } = require('../services/subscriptionService');
 const { ConversionService } = require('../services/conversionService');
+const { getPublicBaseUrl } = require('../utils/converters/urlHandler');
 const { safeBase64Encode, filterSnellNodes } = require('../utils');
 
 // 获取订阅内容 - 支持 /path 格式
@@ -32,12 +33,11 @@ async function handleSubscriptionRequest(req, res, path, format) {
       });
     }
 
-    const { nodes: content, subscriptionUrl, config } = subscriptionData;
+    const { nodes: content, config } = subscriptionData;
 
-    // 构建真实的订阅 URL（使用请求中的真实域名）
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const realBaseUrl = `${protocol}://${host}`;
+    const requestBaseUrl = `${req.protocol}://${req.get('host')}`;
+    const subscriptionUrl = `${getPublicBaseUrl(requestBaseUrl)}/${path}`;
+    const realBaseUrl = requestBaseUrl;
 
     // 根据格式返回内容
     let response;
