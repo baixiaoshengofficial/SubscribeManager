@@ -14,9 +14,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     envDir,
-    define: {
-      'import.meta.env.VITE_BACKEND_PORT': JSON.stringify(String(BACKEND_PORT)),
-    },
     plugins: [vue()],
     server: {
       port: FRONTEND_PORT,
@@ -24,6 +21,10 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': { target: backendTarget, changeOrigin: true },
         '/version': { target: backendTarget, changeOrigin: true },
+        '^/(?!api(?:/|$)|version(?:/|$)|assets(?:/|$))[^/]+(?:/(?:v2ray|surge|clash|shadowsocks|nodes))?$': {
+          target: backendTarget,
+          changeOrigin: true,
+        },
       },
     },
   };
