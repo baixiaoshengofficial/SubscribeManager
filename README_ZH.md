@@ -193,6 +193,8 @@ docker compose up -d --build   # 等价 make buildup
 
 浏览器访问 **FRONTEND_PORT**（如 `http://localhost:5101/`）。订阅链接与管理页**同域**，直接在域名后加路径即可（如 `https://你的域名/my-sub/clash`）；前端 Nginx 会把订阅路径反代到后端，无需额外配置。
 
+> **重要**：公网域名 / 外层 Nginx 必须反代到 **`FRONTEND_PORT`（前端容器）**，不要直接指到 `BACKEND_PORT`。若只暴露后端端口，访问 `/` 会报错，管理页无法打开。
+
 **常用命令**
 
 

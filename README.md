@@ -183,6 +183,8 @@ docker compose up -d --build   # same as: make buildup
 
 Open **FRONTEND_PORT** in the browser (e.g. `http://localhost:5101/`). Subscription links use the **same origin as the admin page** plus the path (e.g. `https://your.domain/my-sub/clash`); the frontend Nginx container proxies those paths to the backend. No extra URL config is required.
 
+> **Important**: Your public domain / outer reverse proxy must point to **`FRONTEND_PORT` (frontend container)**, not `BACKEND_PORT`. Exposing only the backend breaks the admin UI at `/`.
+
 **Common commands**
 
 | Command | Description |

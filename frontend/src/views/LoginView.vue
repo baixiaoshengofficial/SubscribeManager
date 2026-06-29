@@ -14,13 +14,14 @@
         :model="form"
         :rules="rules"
         label-position="top"
+        autocomplete="off"
         @submit.prevent="submit"
       >
         <el-form-item :label="t('login.username')" prop="username">
           <el-input
             v-model="form.username"
             :prefix-icon="User"
-            autocomplete="username"
+            autocomplete="off"
             :placeholder="t('login.username')"
           />
         </el-form-item>
@@ -29,7 +30,7 @@
             v-model="form.password"
             type="password"
             :prefix-icon="Lock"
-            autocomplete="current-password"
+            autocomplete="new-password"
             show-password
             :placeholder="t('login.password')"
             @keyup.enter="submit"
@@ -58,7 +59,7 @@ const emit = defineEmits(['success']);
 
 const formRef = ref();
 const loading = ref(false);
-const form = reactive({ username: 'admin', password: 'admin' });
+const form = reactive({ username: '', password: '' });
 
 const rules = {
   username: [{ required: true, message: '', trigger: 'blur' }],
