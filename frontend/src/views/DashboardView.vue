@@ -303,10 +303,6 @@
     <!-- 添加节点 -->
     <el-dialog v-model="addNodeVisible" :title="t('modal.add_node_title')" width="640px">
       <el-form label-position="top">
-        <el-form-item :label="t('nodes.name')">
-          <el-input v-model="addNodeForm.name" data-testid="node-name" :placeholder="t('nodes.name_optional_placeholder')" />
-          <div class="form-help">{{ t('nodes.name_optional') }}</div>
-        </el-form-item>
         <el-form-item :label="t('nodes.content_label')">
           <el-input
             v-model="addNodeForm.content"
@@ -498,7 +494,7 @@ const subRules = {
 // ---- node dialogs ----
 const addNodeVisible = ref(false);
 const editNodeVisible = ref(false);
-const addNodeForm = reactive({ path: '', name: '', content: '' });
+const addNodeForm = reactive({ path: '', content: '' });
 const editNodeForm = reactive({ path: '', id: null, content: '' });
 
 // ---- subconverter dialog ----
@@ -804,7 +800,6 @@ async function deleteNode(path, node) {
 
 function openAddNode(path) {
   addNodeForm.path = path;
-  addNodeForm.name = '';
   addNodeForm.content = '';
   addNodeVisible.value = true;
 }
@@ -814,7 +809,7 @@ async function createNode() {
     toast('warning', t('nodes.content_required'));
     return;
   }
-  const parsed = parseNodeContent(addNodeForm.content, addNodeForm.name.trim() || undefined);
+  const parsed = parseNodeContent(addNodeForm.content);
   if (!parsed.length) {
     toast('warning', t('nodes.unsupported_format'));
     return;
