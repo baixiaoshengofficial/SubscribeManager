@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SubscribeManager · 文档</title>
+<link rel="stylesheet" href="wiki.css" />
+</head>
+<body>
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <a class="brand" href="index.html"><span class="dot"></span> SubscribeManager</a>
+      <button class="lang-btn" id="langBtn">EN</button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group" data-label-zh="开始" data-label-en="Start">
+        <a href="#intro" class="nav-item active">项目介绍</a>
+        <a href="#features" class="nav-item">功能一览</a>
+        <a href="#deploy" class="nav-item">部署方式</a>
+      </div>
+      <div class="nav-group" data-label-zh="日常使用" data-label-en="Usage">
+        <a href="#env" class="nav-item">环境配置</a>
+        <a href="#ui" class="nav-item">界面导览</a>
+        <a href="#protocols" class="nav-item">协议与订阅</a>
+      </div>
+      <div class="nav-group" data-label-zh="进阶" data-label-en="Advanced">
+        <a href="#arch" class="nav-item">架构概览</a>
+        <a href="#security" class="nav-item">安全要点</a>
+        <a href="#faq" class="nav-item">常见问题</a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">
+      <a href="index.html">← 返回主页</a>
+      <a href="https://www.baixiaosheng.de" target="_blank" rel="noopener">更多项目 ↗</a>
+      <a href="https://github.com/baixiaoshengofficial/SubscribeManager" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </aside>
+
+  <header class="mobile-bar">
+    <button class="menu-btn" id="menuBtn" aria-label="menu">☰</button>
+    <span class="mobile-title">SubscribeManager 文档</span>
+    <button class="lang-btn sm" id="langBtnM">EN</button>
+  </header>
+
+  <main class="content" id="content">
+
+    <!-- ========== 介绍 ========== -->
+    <article id="intro" class="page active">
+      <h1>项目介绍</h1>
+      <p class="lead">
+         SubscribeManager 是一个自托管的订阅管理后台。你可以在网页里维护代理节点，并生成 Surge / Clash / V2RayN 等客户端可用的订阅地址。整站基于 Node.js，数据写入 SQLite，不需要额外数据库；节点录入、排序、导入导出都在后台里完成。
+      </p>
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon">📦</div>
+          <h3>Docker Compose 启动</h3>
+          <p>一条 Compose 命令同时启动前后端。迁移时把目录拷到新机器，再执行 <code>docker compose up -d</code> 即可。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🎛️</div>
+          <h3>网页里维护</h3>
+          <p>节点、订阅、Clash 模板都在网页上维护。顺序可以拖动调整，不用手改 JSON。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🔗</div>
+          <h3>多格式输出</h3>
+          <p>同一批节点可以输出 Raw / Base64 / Surge / Clash 四种格式，每种格式对应一条订阅地址，互不冲突。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🔒</div>
+          <h3>Session + Cookie</h3>
+          <p>后台使用 Session 登录，Cookie 默认启用安全属性；启用 HTTPS 后会再加安全头。</p>
+        </div>
+      </div>
+      <div class="callout info">
+        <strong>适合谁用？</strong>
+        <span>
+          适合已有 VPS 或自托管环境、需要整理多来源代理节点的人。它更偏个人和小团队使用，不适合大型公开服务、多租户计费或企业接入这类场景。
+        </span>
+      </div>
+    </article>
+
+    <!-- ========== 功能 ========== -->
+    <article id="features" class="page">
+      <h1>功能一览</h1>
+
+      <h2>支持的协议</h2>
+      <p>
+         后端会根据贴入的文本识别协议；前端也有录入引导，按字段填写即可。
+      </p>
+      <div class="protocol-grid">
+        <div class="proto-chip"><div class="icon">🔐</div>SS</div>
+        <div class="proto-chip"><div class="icon">✈️</div>VMess</div>
+        <div class="proto-chip"><div class="icon">🪂</div>Trojan</div>
+        <div class="proto-chip"><div class="icon">⚡</div>VLESS</div>
+        <div class="proto-chip"><div class="icon">🧦</div>SOCKS5</div>
+        <div class="proto-chip"><div class="icon">🌀</div>Snell</div>
+        <div class="proto-chip"><div class="icon">🚀</div>Hysteria2</div>
+        <div class="proto-chip"><div class="icon">🎯</div>TUIC</div>
+      </div>
+
+      <h2>订阅能做什么</h2>
+      <ul class="plain-list">
+        <li>可以创建多条订阅，每条订阅对应独立路径。</li>
+        <li>节点可以按协议或关键词过滤，只把需要的节点放进订阅。</li>
+        <li>整段贴入节点文本，后台会按 host + port 自动去重。</li>
+        <li>拖动即可调整顺序，客户端会按这个顺序读取节点。</li>
+      </ul>
+
+      <h2>四种订阅输出</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Format</th>
+            <th>Path</th>
+            <th>适用客户端</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/sub/&lt;id&gt;</code></td>
+            <td><span>原生</span></td>
+            <td>V2RayN、NekoBox 可直接订阅</td>
+          </tr>
+          <tr>
+            <td><code>/v2ray/&lt;id&gt;</code></td>
+            <td>Base64</td>
+            <td>Shadowrocket 及较旧的客户端</td>
+          </tr>
+          <tr>
+            <td><code>/surge/&lt;id&gt;</code></td>
+            <td>Surge</td>
+            <td>Surge、Stash 可直接订阅</td>
+          </tr>
+          <tr>
+            <td><code>/clash/&lt;id&gt;</code></td>
+            <td>Clash</td>
+            <td>Clash Verge / Mihomo / ClashX</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Clash 特性</h2>
+      <ul class="plain-list">
+        <li>默认模板自带 3900 多条规则</li>
+        <li>rule-provider 里声明的规则会被自动展开为正式规则</li>
+        <li>可外接一个 Subconverter 后端，加载你自己写的模板</li>
+        <li>兼容 ClashMeta 与 ClashX</li>
+      </ul>
+    </article>
+
+    <!-- ========== 部署方式 ========== -->
+    <article id="deploy" class="page">
+      <h1>部署方式</h1>
+
+      <h2>部署前准备</h2>
+      <table class="data-table">
+        <thead><tr><th>Method</th><th>要求</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>源码部署</td>
+            <td>Node.js 20+、npm</td>
+          </tr>
+          <tr>
+            <td>Docker Compose</td>
+            <td>Docker 20+、Docker Compose v2+</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        部署前先复制一份配置文件，并按你的环境做必要修改：
+      </p>
+      <pre class="code-block"><code>cp .env.example .env
+# 至少把 ADMIN_USERNAME / ADMIN_PASSWORD / SESSION_SECRET 改掉</code></pre>
+
+      <div class="deploy-pick">
+        <div class="deploy-card">
+          <h3>Docker Compose</h3>
+          <p>
+            生产环境建议使用这种方式。前后端分别运行，Nginx 把 <code>/api</code> 反向代理给后端。
+          </p>
+        </div>
+        <div class="deploy-card">
+          <h3>源码部署</h3>
+          <p>
+            一个进程同时托管 API 与静态前端，适合本地调试或小规模自用。
+          </p>
+        </div>
+      </div>
+
+      <h2>Docker Compose 部署</h2>
+      <pre class="code-block"><code>git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
+cd SubscribeManager
+cp .env.example .env     # 见下方字段说明
+docker compose up -d</code></pre>
+      <p>停下服务、看实时日志：</p>
+      <pre class="code-block"><code>docker compose down
+docker compose logs -f</code></pre>
+      <p>如果不使用 Docker Hub 镜像，也可以从当前源码构建：</p>
+      <pre class="code-block"><code>docker compose up -d --build
+# 等价于
+make buildup</code></pre>
+
+      <h2>源码部署</h2>
+      <pre class="code-block"><code>cp .env.example .env
+make install       # 安装前后端依赖
+make frontend-build
+make backend-dev   # 或 cd backend && BACKEND_PORT=5100 npm start</code></pre>
+      <p>
+        源码模式下，后端同时响应 <code>/api/*</code> 请求并托管 <code>frontend/dist</code> 里的静态文件，因此只需对外暴露 <code>BACKEND_PORT</code> 一个端口。
+      </p>
+
+      <h2>访问应用</h2>
+      <p>访问地址：</p>
+      <ul class="plain-list">
+        <li>Docker：<code>http://&lt;host&gt;:&lt;FRONTEND_PORT&gt;/</code></li>
+        <li>源码模式：<code>http://&lt;host&gt;:&lt;BACKEND_PORT&gt;/</code></li>
+      </ul>
+      <div class="callout tip">
+        <strong>在线演示</strong>
+        <span>
+          <a href="https://subscribe.baixiaosheng.de" target="_blank" rel="noopener">https://subscribe.baixiaosheng.de</a>
+          <span>，体验账号 / 密码均为 admin；仅用于功能演示，不要保存真实节点。</span>
+        </span>
+      </div>
+    </article>
+
+    <!-- ========== 环境配置 ========== -->
+    <article id="env" class="page">
+      <h1>环境配置</h1>
+      <p
+      >
+        所有环境变量都在项目根目录的 <code>.env</code> 文件里配置，Makefile、Docker Compose 和 Node 进程都从这里读取。
+      </p>
+
+      <h2>字段说明</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>必须</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ADMIN_USERNAME</code></td>
+            <td>是</td>
+            <td>后台登录账号</td>
+          </tr>
+          <tr>
+            <td><code>ADMIN_PASSWORD</code></td>
+            <td>是</td>
+            <td>后台登录密码（正式部署前务必改掉默认值）</td>
+          </tr>
+          <tr>
+            <td><code>SESSION_SECRET</code></td>
+            <td>是</td>
+            <td>长随机串，用于签名会话 cookie</td>
+          </tr>
+          <tr>
+            <td><code>BACKEND_PORT</code></td>
+            <td>是</td>
+            <td>后端 API 端口；源码模式对外只需要这个端口</td>
+          </tr>
+          <tr>
+            <td><code>FRONTEND_PORT</code></td>
+            <td>是</td>
+            <td>前端端口（Docker 模式 / Vite 开发服务器）</td>
+          </tr>
+          <tr>
+            <td><code>DB_PATH</code></td>
+            <td>否</td>
+            <td>SQLite 相对路径，默认 <code>./data/subscriptions.db</code></td>
+          </tr>
+          <tr>
+            <td><code>COOKIE_SECURE</code></td>
+            <td>否</td>
+            <td>HTTPS 部署时设为 <code>true</code></td>
+          </tr>
+          <tr>
+            <td><code>PUBLIC_BASE_URL</code></td>
+            <td>否</td>
+            <td>仅当 Subconverter 在外网时才需要</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>研发常用命令</h2>
+      <table class="data-table">
+        <thead><tr><th>Command</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td><code>make install</code></td><td>安装 frontend 与 backend 依赖</td></tr>
+          <tr><td><code>make dev</code></td><td>启动前后端（会先处理端口冲突）</td></tr>
+          <tr><td><code>make test</code></td><td>运行后端 Jest</td></tr>
+          <tr><td><code>make test-frontend</code></td><td>运行前端 Vitest</td></tr>
+          <tr><td><code>make frontend-build</code></td><td>构建前端产物到 frontend/dist</td></tr>
+          <tr><td><code>make check</code></td><td>运行完整检查：后端测试 + 前端测试 + 前端构建</td></tr>
+        </tbody>
+      </table>
+    </article>
+
+    <!-- ========== 界面导览 ========== -->
+    <article id="ui" class="page">
+      <h1>界面导览</h1>
+      <p>
+        打开后台后，默认进入「控制台」视图。右上角可以切换中 / 英文和深浅主题，也能跳到 GitHub；顶部 tab 在「控制台」与「配置管理」之间切换。
+      </p>
+
+      <div class="screen-shot">
+        <div class="shot-body">
+          <div class="shot-title">后台布局 / Console</div>
+          <div class="layout-wire">
+            <div class="wire-half">
+              <h4>控制台</h4>
+              <ul>
+                <li>节点列表 / 创建 / 编辑 / 删除</li>
+                <li>订阅管理、路径与规则配置</li>
+                <li>Clash 模板编辑器</li>
+                <li>批量导入、拖拽排序</li>
+              </ul>
+            </div>
+            <div class="wire-half">
+              <h4>配置管理</h4>
+              <p>
+                协议录入对照、订阅路径编辑和告警入口都在这里。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========== 协议订阅 ========== -->
+    <article id="protocols" class="page">
+      <h1>协议与订阅</h1>
+
+      <h2>节点是什么</h2>
+      <p>
+        节点是一条代理链路配置，由 <code>host + port + protocol</code> 区分，包含协议参数、传输层、TLS、流控等信息。
+      </p>
+
+      <h2>订阅是什么</h2>
+      <p>
+        一份订阅就是「一批节点 + 一套输出规则」，对应一条 URL。客户端用这条 URL 拉配置。
+      </p>
+      <ul class="plain-list">
+        <li>每条订阅挂一条单独的路径</li>
+        <li>可按协议或关键词预先过滤，只把需要的节点放进订阅</li>
+        <li>每种输出格式都有单独的 URL：<code>/sub</code>、<code>/v2ray</code>、<code>/surge</code>、<code>/clash</code></li>
+      </ul>
+
+      <h2>客户端配置示例</h2>
+      <pre class="code-block"><code># Surge / Stash
+https://sub.example.com/surge/myid    # 订阅地址
+
+# Clash Verge / Mihomo
+https://sub.example.com/clash/myid
+
+# V2RayN / NekoBox (原始格式)
+https://sub.example.com/sub/myid
+
+# Shadowrocket (Base64)
+https://sub.example.com/v2ray/myid</code></pre>
+
+      <div class="callout warn">
+        <strong>路径安全</strong>
+        <span>
+          订阅没有单独的访问权限；路径本身就是密钥。一旦泄露，别人就能拿到订阅内容。建议用 UUID 作路径。
+        </span>
+      </div>
+
+      <h2>Clash 模板</h2>
+      <p>
+        默认 Clash 模板自带 3900 多条规则，rule-provider 会在输出时自动展开为正式规则；模板以 YAML 格式存储。
+      </p>
+      <p>如果想用自己的模板接管 Clash 输出，可以接入 Subconverter。SubscribeManager 会把节点 inline 进模板后生成最终配置：</p>
+      <pre class="code-block"><code># 配合 Subconverter 时，节点会被 inline 进模板，客户端直接从 URL 获取 Clash 配置
+# 客户端无需自己订阅或拼接</code></pre>
+    </article>
+
+    <!-- ========== 架构 ========== -->
+    <article id="arch" class="page">
+      <h1>架构概览</h1>
+      <p>
+        系统分三层：Vue 3 负责浏览器界面，Express 5 提供 HTTP API，SQLite 存数据。
+      </p>
+
+      <div class="arch-flow">
+        <div class="arch-step">
+          Browser
+          <small>Vue 3 + Element Plus</small>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">
+           Nginx / Vite proxy
+          <small>/api</small>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">
+          Express 5
+          <small>routes · services</small>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">
+          SQLite
+          <small>data/subscriptions.db</small>
+        </div>
+      </div>
+
+      <h2>Docker 模式下</h2>
+      <table class="data-table">
+        <thead><tr><th>Container</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>backend</code></td>
+            <td>提供 API 和订阅内容，宿主机的 <code>./data</code> 会挂载给 SQLite 使用</td>
+          </tr>
+          <tr>
+            <td><code>frontend</code></td>
+            <td>Nginx 提供静态前端，反代 <code>/api</code> 给 <code>backend</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>目录职责</h2>
+      <table class="data-table">
+        <thead><tr><th>Path</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>backend/</code></td><td>Express 业务代码、入口 <code>index.js</code>、数据库初始化</td></tr>
+          <tr><td><code>backend/routes/</code></td><td>路由与鉴权</td></tr>
+          <tr><td><code>backend/services/</code></td><td>节点/订阅的业务逻辑</td></tr>
+          <tr><td><code>backend/utils/</code></td><td>Clash 模板展开、协议解析等</td></tr>
+          <tr><td><code>frontend/src/</code></td><td>Vue 3 源码</td></tr>
+          <tr><td><code>frontend/dist/</code></td><td>Vite 构建产物</td></tr>
+          <tr><td><code>data/</code></td><td>SQLite 数据库（工作目录）</td></tr>
+        </tbody>
+      </table>
+    </article>
+
+    <!-- ========== 安全要点 ========== -->
+    <article id="security" class="page">
+      <h1>安全要点</h1>
+      <p>默认配置较简单，公开到公网前先做这四件事：</p>
+
+      <ol class="steps">
+        <li>把 <code>ADMIN_USERNAME</code> / <code>ADMIN_PASSWORD</code> 从默认的 <code>admin/admin</code> 改掉。</li>
+        <li>设置一个足够长的 <code>SESSION_SECRET</code>，部署前用 <code>pwgen</code> 或 <code>openssl rand</code> 生成。</li>
+        <li>通过 HTTPS 访问时，把 <code>COOKIE_SECURE</code> 设成 <code>true</code>，避免 Cookie 通过明文传输。</li>
+        <li>订阅路径建议使用 UUID，不要使用容易猜到的名称。</li>
+      </ol>
+
+      <div class="callout warn">
+        <strong>反代注意</strong>
+        <span>
+          如果前面再套一层 Nginx / Caddy 做 TLS，要把 <code>X-Forwarded-*</code> 头透传给后端；后端会根据这些头判断订阅 URL 的协议。
+        </span>
+      </div>
+    </article>
+
+    <!-- ========== FAQ ========== -->
+    <article id="faq" class="page">
+      <h1>常见问题</h1>
+
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>源码部署可以只开放一个端口吗？</summary>
+          <p>
+            可以。源码模式下后端既提供 /api/*，也托管 <code>frontend/dist</code> 静态文件，只需要开放 <code>BACKEND_PORT</code>。<code>FRONTEND_PORT</code> 只在 <code>make dev</code>（Vite 开发服务器）时使用。
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Docker 模式下 .env 里的端口是容器内的还是宿主机的？</summary>
+          <p>
+            <code>.env</code> 同时用于 <code>docker compose ports</code> 映射和容器内进程监听，映射两端的端口号一致。所以 <code>FRONTEND_PORT</code> 既决定容器监听端口，也决定宿主机暴露的端口。
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>能不能把后端放在内网，只公开前端？</summary>
+          <p>
+            可以，生产环境也建议这样做。后端绑定到内网端口，前端通过反向代理访问它，并把 <code>VITE_BACKEND_TARGET</code> 指向内网地址。对外只开放 <code>FRONTEND_PORT</code>。
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>订阅路径能改成不带 <code>/sub</code>/<code>/v2ray</code>/<code>/surge</code>/<code>/clash</code> 前缀吗？</summary>
+          <p>
+            目前 URL 结构写在路由里：<code>/sub/:id</code>、<code>/v2ray/:id</code>、<code>/surge/:id</code>、<code>/clash/:id</code>。如果想换别的路径（例如 <code>/mysub</code>），需要在 fork 里改路由表，或在前面加一层反向代理规则。不建议改，这些路径已经被不少客户端默认识别，改了下游也要同步调整。
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>版本升级会丢数据吗？</summary>
+          <p>
+            不会，数据和代码是完全分离的。SQLite 数据库放在 <code>./data/subscriptions.db</code>（源码模式），或宿主机的 <code>./data</code>（Docker 模式下挂载进容器）。升级只需 <code>docker compose down</code> 后换新镜像再 <code>up -d</code>；源码模式 <code>git pull</code> 加 <code>make install</code> 即可。
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>怎样给默认账号加二次验证？</summary>
+          <p>
+            目前只做到 Session 登录，TOTP / FIDO2 还没接入。现阶段能用上的额外防线是强密码、HTTPS、<code>COOKIE_SECURE=true</code> 和 IP 白名单。
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Clash 订阅需要 Subconverter 后端吗？</summary>
+          <p>
+            默认不用。内置 Clash 模板已经会展开 rule-provider，输出的 YAML 可以直接给客户端使用。只有想用自己的模板接管输出时，才需要另外接入 Subconverter。
+          </p>
+        </details>
+      </div>
+    </article>
+
+  </main>
+</div>
+
+<script src="wiki.js"></script>
+</body>
+</html>

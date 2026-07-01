@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SubscribeManager · 项目主页</title>
+<style>
+:root{
+  --bg:#0d1117; --bg-soft:#161b22; --bg-card:#1b222c;
+  --border:#2d3643; --fg:#e6edf3; --fg-dim:#9aa7b4;
+  --accent:#3fb950; --accent2:#58a6ff; --accent3:#d29922; --accent4:#b14aff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.7; -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.88em;background:rgba(176,74,255,.10);padding:2px 7px;
+  border-radius:5px;color:var(--accent4)}
+
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(13,17,23,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  max-width:1000px;margin:0 auto;padding:14px 28px;
+  display:flex;align-items:center;gap:18px;
+}
+.nav .brand{font-weight:700;display:flex;align-items:center;gap:9px;color:var(--fg)}
+.nav .brand:hover{text-decoration:none}
+.nav .brand .dot{
+  width:9px;height:9px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 0 10px var(--accent);
+}
+.nav-links{display:flex;gap:22px;margin-left:auto;font-size:.92rem}
+.nav-links a{color:var(--fg-dim)}
+.nav-links a:hover{color:var(--fg)}
+
+.hero{
+  max-width:1000px;margin:0 auto;padding:84px 28px 56px;
+}
+.hero .eyebrow{
+  display:inline-block;font-size:.78rem;letter-spacing:2px;
+  color:var(--accent);text-transform:uppercase;font-weight:600;
+  margin-bottom:18px;
+}
+.hero h1{font-size:2.6rem;letter-spacing:-1px;line-height:1.2;margin-bottom:20px}
+.hero h1 .mark{background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{
+  font-size:1.15rem;color:var(--fg-dim);max-width:760px;margin-bottom:32px;
+}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn{
+  display:inline-block;padding:12px 24px;border-radius:10px;font-weight:600;
+  font-size:.95rem;border:1px solid var(--border);
+}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#1f6feb);color:#fff;border:none}
+.btn.primary:hover{text-decoration:none;filter:brightness(1.08)}
+.btn.ghost{color:var(--fg-dim)}
+.btn.ghost:hover{color:var(--fg);text-decoration:none;border-color:var(--accent2)}
+
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.badge{
+  font-size:.78rem;color:var(--fg-dim);background:var(--bg-soft);
+  border:1px solid var(--border);padding:5px 12px;border-radius:20px;
+}
+
+.section{
+  max-width:1000px;margin:0 auto;padding:44px 28px;
+  border-top:1px solid var(--border);
+}
+.section h2{font-size:1.6rem;margin-bottom:8px}
+.section h2 .sub{color:var(--fg-dim);font-size:.9rem;font-weight:400;margin-left:12px}
+
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:16px;margin-top:28px;
+}
+.card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:22px;margin:0;
+}
+.card h3{font-size:1.05rem;margin-bottom:8px;color:var(--fg)}
+.card p{font-size:.9rem;color:var(--fg-dim);margin:0}
+.card pre{
+  margin:14px 0 0;background:#0a0e14;border:1px solid var(--border);
+  border-radius:8px;padding:14px 16px;font-size:.78rem;color:var(--fg-dim);
+  font-family:ui-monospace,Menlo,Consolas,monospace;overflow-x:auto;
+  white-space:pre;
+}
+
+.flow{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0;
+}
+.flow-step{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:10px;padding:16px 20px;text-align:center;
+}
+.flow-step small{display:block;color:var(--fg-dim);font-size:.72rem;margin-top:3px}
+.flow-arrow{color:var(--accent2);font-size:1.5rem}
+
+.proto-row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.proto-pill{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;font-size:.85rem;color:var(--fg);
+}
+
+.footer{
+  max-width:1000px;margin:0 auto;padding:28px;
+  border-top:1px solid var(--border);
+  color:var(--fg-dim);font-size:.85rem;
+}
+.footer a{color:var(--fg-dim)}
+
+@media(max-width:768px){
+  .hero h1{font-size:2rem}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#"><span class="dot"></span> SubscribeManager</a>
+    <div class="nav-links">
+      <a href="wiki.html#intro">文档</a>
+      <a href="wiki.html#deploy">部署</a>
+      <a href="wiki.html#faq">FAQ</a>
+      <a href="https://www.baixiaosheng.de" target="_blank" rel="noopener">更多项目 ↗</a>
+      <a href="https://github.com/baixiaoshengofficial/SubscribeManager" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">轻量级 · 自托管</div>
+  <h1>管理代理节点，<span class="mark">生成订阅链接</span></h1>
+  <p class="lead">在网页后台维护代理节点，并为 Surge / Clash / V2RayN 等客户端生成对应的订阅地址。支持 Docker Compose 部署，数据保存在 SQLite，前后端也可以分开运行。</p>
+
+  <div class="cta-row">
+    <a class="btn primary" href="wiki.html#deploy">→ 查看部署</a>
+    <a class="btn ghost" href="https://github.com/baixiaoshengofficial/SubscribeManager" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <div class="badges">
+    <span class="badge">Node.js 20+</span>
+    <span class="badge">Vue 3 + Vite</span>
+    <span class="badge">Express 5</span>
+    <span class="badge">SQLite</span>
+    <span class="badge">Docker Compose</span>
+  </div>
+</section>
+
+<section class="section">
+  <h2>请求从浏览器到后端怎么走<span class="sub">管理入口和订阅地址分开处理</span></h2>
+  <div class="flow">
+    <div class="flow-step">管理面板<br /><small>浏览器 · UI</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Nginx / Vite<br /><small>/api · /sub · /surge · /clash</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Express 5<br /><small>auth · services</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">SQLite<br /><small>nodes · subscriptions</small></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>支持的协议</h2>
+  <div class="proto-row">
+    <div class="proto-pill">SS</div>
+    <div class="proto-pill">VMess</div>
+    <div class="proto-pill">Trojan</div>
+    <div class="proto-pill">VLESS</div>
+    <div class="proto-pill">SOCKS5</div>
+    <div class="proto-pill">Snell</div>
+    <div class="proto-pill">Hysteria2</div>
+    <div class="proto-pill">TUIC</div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>为什么选择自建</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>数据保存在本地</h3>
+      <p>
+       节点和订阅信息只写入你自己的 <code>./data</code> 目录，不上传分析数据，也没有埋点。
+      </p>
+    </div>
+    <div class="card">
+      <h3>一批节点，多种输出</h3>
+      <p>
+       同一批节点可以生成 Raw / Base64 / Surge / Clash 四种订阅格式，分别给不同客户端使用，不需要维护多份节点列表。
+      </p>
+    </div>
+    <div class="card">
+      <h3>迁移只带数据目录</h3>
+      <p>
+       带走 <code>./data</code> 和 <code>.env</code>，在新机器上执行 <code>docker compose up -d</code> 就能恢复，不需要再导入一遍。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>快速部署</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>1. 复制配置文件</h3>
+      <pre>git clone https://github.com/baixiaoshengofficial/SubscribeManager.git
+cd SubscribeManager
+cp .env.example .env
+# 编辑 .env：账号密码、端口、SESSION_SECRET 等按需修改</pre>
+    </div>
+    <div class="card">
+      <h3>2. 启动服务</h3>
+      <pre>docker compose up -d
+# 或源码部署：
+make install && make frontend-build && make backend-dev</pre>
+    </div>
+    <div class="card">
+      <h3>3. 打开它</h3>
+      <pre>http://&lt;你的主机&gt;:&lt;FRONTEND_PORT&gt;/
+# 默认账号 admin / admin（请在 .env 改掉）</pre>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  © 2026 SubscribeManager · MIT License ·
+  <a href="https://www.baixiaosheng.de" target="_blank" rel="noopener">更多项目</a> ·
+  <a href="https://github.com/baixiaoshengofficial/SubscribeManager" target="_blank" rel="noopener">GitHub</a> ·
+  <a href="wiki.html">读完整文档 →</a>
+</footer>
+
+</body>
+</html>
