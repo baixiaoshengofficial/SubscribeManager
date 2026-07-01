@@ -12,7 +12,7 @@ RELEASE_TAG := $(TAG_PREFIX)$(VERSION)
 BACKEND_PORT ?= $(shell grep -E '^BACKEND_PORT=' .env 2>/dev/null | head -1 | cut -d '=' -f 2 | tr -d '\r')
 FRONTEND_PORT ?= $(shell grep -E '^FRONTEND_PORT=' .env 2>/dev/null | head -1 | cut -d '=' -f 2 | tr -d '\r')
 
-.PHONY: help dev install backend-dev frontend-dev frontend-build test test-frontend check clean up buildup down logs build push github-release release update-changelog bump-patch bump-minor bump-major
+.PHONY: help dev install backend-dev frontend-dev frontend-build test test-frontend test-e2e check clean up buildup down logs build push github-release release update-changelog bump-patch bump-minor bump-major
 
 help: ## 显示帮助
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -131,7 +131,10 @@ test: ## 运行后端测试
 test-frontend: ## 运行前端测试（vitest）
 	cd frontend && npm test
 
-check: test test-frontend ## 前后端测试 + 前端构建校验
+test-e2e: ## 运行浏览器冒烟测试（Playwright）
+	cd frontend && npx playwright install chromium && npm run test:e2e
+
+check: test test-frontend test-e2e ## 前后端测试 + 浏览器冒烟 + 前端构建校验
 	cd frontend && npm run build
 
 clean: ## 清理构建产物

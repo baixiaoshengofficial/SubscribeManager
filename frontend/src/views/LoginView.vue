@@ -20,6 +20,7 @@
         <el-form-item :label="t('login.username')" prop="username">
           <el-input
             v-model="form.username"
+            data-testid="login-username"
             :prefix-icon="User"
             autocomplete="off"
             :placeholder="t('login.username')"
@@ -28,6 +29,7 @@
         <el-form-item :label="t('login.password')" prop="password">
           <el-input
             v-model="form.password"
+            data-testid="login-password"
             type="password"
             :prefix-icon="Lock"
             autocomplete="new-password"
@@ -39,6 +41,7 @@
         <el-button
           type="primary"
           class="login-submit"
+          data-testid="login-submit"
           :loading="loading"
           @click="submit"
         >{{ loading ? t('login.submitting') : t('login.submit') }}</el-button>

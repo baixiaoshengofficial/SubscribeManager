@@ -1,12 +1,12 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard" data-testid="dashboard">
     <div class="page-header">
       <div class="page-title-block">
         <p class="eyebrow">{{ t('admin.eyebrow') }}</p>
         <div class="page-title-row">
           <h1 class="page-title">{{ t('admin.title') }}</h1>
           <div class="page-actions">
-            <el-button type="primary" @click="openAddSubscription">
+            <el-button type="primary" data-testid="add-subscription" @click="openAddSubscription">
               <el-icon><Plus /></el-icon>
               <span>{{ t('actions.add_subscription') }}</span>
             </el-button>
@@ -28,6 +28,7 @@
         v-for="sub in subscriptions"
         :key="sub.path"
         class="subscription-card"
+        :data-testid="`subscription-card-${sub.path}`"
         shadow="never"
       >
         <div class="sub-header">
@@ -75,12 +76,13 @@
         </div>
 
         <div class="sub-actions">
-          <el-button type="success" plain @click="openAddNode(sub.path)">
+          <el-button type="success" plain :data-testid="`add-node-${sub.path}`" @click="openAddNode(sub.path)">
             <el-icon><Plus /></el-icon>
             <span>{{ t('actions.add_node') }}</span>
           </el-button>
           <el-button
             :type="expandedPaths.includes(sub.path) ? 'primary' : 'default'"
+            :data-testid="`toggle-nodes-${sub.path}`"
             @click="toggleExpand(sub.path)"
           >
             <el-icon><List /></el-icon>
@@ -263,16 +265,16 @@
     <el-dialog v-model="addSubVisible" :title="t('subscription.add_title')" width="460px">
       <el-form ref="addSubFormRef" :model="addSubForm" :rules="subRules" label-position="top">
         <el-form-item :label="t('subscription.name_label')" prop="name">
-          <el-input v-model="addSubForm.name" :placeholder="t('subscription.name_label')" />
+          <el-input v-model="addSubForm.name" data-testid="subscription-name" :placeholder="t('subscription.name_label')" />
         </el-form-item>
         <el-form-item :label="t('subscription.path_label')" prop="path">
-          <el-input v-model="addSubForm.path" :placeholder="t('subscription.path_label')" />
+          <el-input v-model="addSubForm.path" data-testid="subscription-path" :placeholder="t('subscription.path_label')" />
           <div class="form-help">{{ t('subscription.path_help') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="addSubVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="submitting" @click="createSubscription">{{ t('common.create') }}</el-button>
+        <el-button type="primary" data-testid="create-subscription" :loading="submitting" @click="createSubscription">{{ t('common.create') }}</el-button>
       </template>
     </el-dialog>
 
@@ -302,11 +304,12 @@
     <el-dialog v-model="addNodeVisible" :title="t('modal.add_node_title')" width="640px">
       <el-form label-position="top">
         <el-form-item :label="t('nodes.name')">
-          <el-input v-model="addNodeForm.name" :placeholder="t('nodes.name')" />
+          <el-input v-model="addNodeForm.name" data-testid="node-name" :placeholder="t('nodes.name')" />
         </el-form-item>
         <el-form-item :label="t('nodes.content_label')">
           <el-input
             v-model="addNodeForm.content"
+            data-testid="node-content"
             type="textarea"
             :rows="6"
             :placeholder="t('nodes.placeholder')"
@@ -315,7 +318,7 @@
       </el-form>
       <template #footer>
         <el-button @click="addNodeVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="submitting" @click="createNode">{{ t('actions.add_node') }}</el-button>
+        <el-button type="primary" data-testid="create-node" :loading="submitting" @click="createNode">{{ t('actions.add_node') }}</el-button>
       </template>
     </el-dialog>
 
