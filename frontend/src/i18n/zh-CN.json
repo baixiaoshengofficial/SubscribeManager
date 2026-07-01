@@ -133,6 +133,8 @@
     "loading": "加载中...",
     "none": "暂无节点",
     "name": "节点名称",
+    "name_optional": "可选。留空时会从节点链接中自动识别名称。",
+    "name_optional_placeholder": "节点名称（可选）",
     "link": "节点链接",
     "edit": "编辑节点",
     "edited": "节点更新成功",

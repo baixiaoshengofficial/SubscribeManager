@@ -133,6 +133,8 @@
     "loading": "Loading...",
     "none": "No nodes",
     "name": "Node Name",
+    "name_optional": "Optional. Leave blank to extract the name from the node link.",
+    "name_optional_placeholder": "Node name (optional)",
     "link": "Node Link",
     "edit": "Edit Node",
     "edited": "Node updated successfully",

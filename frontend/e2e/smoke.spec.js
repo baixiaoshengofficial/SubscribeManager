@@ -32,7 +32,6 @@ test.describe('application smoke flow', () => {
     await expect(subscriptionCard).toContainText(subscriptionName);
 
     await page.getByTestId(`add-node-${subscriptionPath}`).click();
-    await fillElementPlusInput(page, 'node-name', nodeName);
     await fillElementPlusInput(page, 'node-content', nodeContent);
     await page.getByTestId('create-node').click();
 
@@ -51,5 +50,12 @@ test.describe('application smoke flow', () => {
     expect(v2rayResponse.ok(), '/v2ray should be reachable').toBe(true);
     const decodedV2ray = Buffer.from(await v2rayResponse.text(), 'base64').toString('utf8');
     expect(decodedV2ray).toContain('Smoke');
+  });
+
+  test('enables browser credential autocomplete only for trusted origins', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByTestId('login-username')).toHaveAttribute('autocomplete', 'username');
+    await expect(page.getByTestId('login-password')).toHaveAttribute('autocomplete', 'current-password');
   });
 });

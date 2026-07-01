@@ -14,7 +14,7 @@
         :model="form"
         :rules="rules"
         label-position="top"
-        autocomplete="off"
+        :autocomplete="credentialAutocompleteAllowed ? 'on' : 'off'"
         @submit.prevent="submit"
       >
         <el-form-item :label="t('login.username')" prop="username">
@@ -22,7 +22,8 @@
             v-model="form.username"
             data-testid="login-username"
             :prefix-icon="User"
-            autocomplete="off"
+            name="username"
+            :autocomplete="credentialAutocompleteAllowed ? 'username' : 'off'"
             :placeholder="t('login.username')"
           />
         </el-form-item>
@@ -32,7 +33,8 @@
             data-testid="login-password"
             type="password"
             :prefix-icon="Lock"
-            autocomplete="new-password"
+            name="password"
+            :autocomplete="credentialAutocompleteAllowed ? 'current-password' : 'new-password'"
             show-password
             :placeholder="t('login.password')"
             @keyup.enter="submit"
@@ -51,11 +53,12 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import { api } from '../api/client';
+import { isCredentialAutocompleteAllowed } from '../utils/credentialAutocomplete';
 
 const { t } = useI18n();
 const emit = defineEmits(['success']);
@@ -63,6 +66,7 @@ const emit = defineEmits(['success']);
 const formRef = ref();
 const loading = ref(false);
 const form = reactive({ username: '', password: '' });
+const credentialAutocompleteAllowed = computed(() => isCredentialAutocompleteAllowed());
 
 const rules = {
   username: [{ required: true, message: '', trigger: 'blur' }],

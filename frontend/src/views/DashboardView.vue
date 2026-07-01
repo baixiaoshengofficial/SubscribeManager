@@ -304,7 +304,8 @@
     <el-dialog v-model="addNodeVisible" :title="t('modal.add_node_title')" width="640px">
       <el-form label-position="top">
         <el-form-item :label="t('nodes.name')">
-          <el-input v-model="addNodeForm.name" data-testid="node-name" :placeholder="t('nodes.name')" />
+          <el-input v-model="addNodeForm.name" data-testid="node-name" :placeholder="t('nodes.name_optional_placeholder')" />
+          <div class="form-help">{{ t('nodes.name_optional') }}</div>
         </el-form-item>
         <el-form-item :label="t('nodes.content_label')">
           <el-input
