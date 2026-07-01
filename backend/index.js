@@ -7,6 +7,7 @@ const { initializeDatabase } = require("./database");
 const config = require("./config");
 const versionInfo = require("../version.json");
 const { getPublicBaseUrl } = require("./utils/converters/urlHandler");
+const logger = require("./utils/logger");
 
 // 使用原有的简单路由
 const apiRoutes = require("./routes/api");
@@ -45,7 +46,7 @@ async function requireAuth(req, res, next) {
     }
     next();
   } catch (error) {
-    console.error("Session verification error:", error);
+    logger.error("Session verification error", { message: error.message });
     delete req.session.sessionId;
     // 如果是API调用，返回401而不是重定向
     if (isApiRequest) {
@@ -125,18 +126,15 @@ async function startApp() {
 
     // 启动服务器
     app.listen(config.port, () => {
-      console.log(`服务器运行在 http://localhost:${config.port}`);
+      logger.info(`服务器运行在 http://localhost:${config.port}`);
 
       // 如果是生产环境，添加安全提示
       if (config.nodeEnv === "production") {
-        console.log(
-          "\x1b[33m%s\x1b[0m",
-          "安全提示: 确保已配置 HTTPS 和适当的防火墙规则",
-        );
+        logger.warn("安全提示: 确保已配置 HTTPS 和适当的防火墙规则");
       }
     });
   } catch (error) {
-    console.error("应用启动失败:", error);
+    logger.error("应用启动失败", { message: error.message });
     process.exit(1);
   }
 }
@@ -146,11 +144,11 @@ startApp();
 
 // 优雅关闭
 process.on("SIGINT", () => {
-  console.log("\n收到终止信号，正在关闭应用...");
+  logger.info("收到终止信号，正在关闭应用...");
   process.exit(0);
 });
 
 process.on("SIGTERM", () => {
-  console.log("\n收到终止信号，正在关闭应用...");
+  logger.info("收到终止信号，正在关闭应用...");
   process.exit(0);
 });

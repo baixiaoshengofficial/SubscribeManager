@@ -100,10 +100,10 @@ class SubscriptionRepository {
    * @returns {Promise<Object>} 创建结果
    */
   static async create(data) {
-    const { name, path, enabled = 1 } = data;
+    const { name, path } = data;
     return await dbRun(
-      'INSERT INTO subscriptions (name, path, enabled) VALUES (?, ?, ?)',
-      [name, path, enabled]
+      'INSERT INTO subscriptions (name, path) VALUES (?, ?)',
+      [name, path]
     );
   }
 
@@ -114,10 +114,10 @@ class SubscriptionRepository {
    * @returns {Promise<Object>} 更新结果
    */
   static async update(id, data) {
-    const { name, path, enabled } = data;
+    const { name, path } = data;
     return await dbRun(
-      'UPDATE subscriptions SET name = ?, path = ?, enabled = ? WHERE id = ?',
-      [name, path, enabled, id]
+      'UPDATE subscriptions SET name = ?, path = ? WHERE id = ?',
+      [name, path, id]
     );
   }
 

@@ -40,8 +40,8 @@ describe('getNodeType', () => {
   });
 
   it('returns empty string for unknown', () => {
-    expect(getNodeType('unknown')).toBe('');
-    expect(getNodeType('')).toBe('');
+    expect(getNodeType('unknown')).toBe('unknown');
+    expect(getNodeType('')).toBe('unknown');
   });
 });
 
@@ -80,7 +80,7 @@ describe('extractNodeName', () => {
   });
 
   it('returns default for empty input', () => {
-    expect(extractNodeName('')).toBe('Unnamed Node');
+    expect(extractNodeName('')).toBe('未命名节点');
   });
 });
 

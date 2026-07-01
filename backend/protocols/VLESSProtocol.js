@@ -1,4 +1,5 @@
 const BaseProtocol = require('./BaseProtocol');
+const logger = require('../utils/logger');
 
 class VLESSProtocol extends BaseProtocol {
   constructor() {
@@ -97,7 +98,7 @@ class VLESSProtocol extends BaseProtocol {
 
       return node;
     } catch (error) {
-      console.error('Failed to parse VLESS link:', error);
+      logger.debug('Failed to parse VLESS link', { message: error.message });
       return null;
     }
   }

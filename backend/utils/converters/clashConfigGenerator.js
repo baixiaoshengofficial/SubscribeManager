@@ -1,5 +1,6 @@
 const https = require('https');
 const { getProtocolFactory } = require('../../protocols/ProtocolFactory');
+const logger = require('../logger');
 
 /**
  * 从 URL 加载模板内容
@@ -90,9 +91,9 @@ async function generateClashConfig(subconvertUrl, templateUrl = null, subscripti
   const queryString = new URLSearchParams(requestParams).toString();
   const fullUrl = `${urlObj.origin}${urlObj.pathname}?${queryString}`;
 
-  console.log('Subconvert request URL:', fullUrl);
+  logger.debug('Subconvert request prepared', { url: fullUrl });
   if (templateUrl) {
-    console.log('Using custom template URL:', templateUrl);
+    logger.debug('Using custom template URL', { url: templateUrl });
   }
 
   // 调用 Subconvert API
@@ -120,11 +121,10 @@ async function generateClashConfig(subconvertUrl, templateUrl = null, subscripti
 
         res.on('end', () => {
           if (res.statusCode === 200) {
-            console.log('Subconvert API response length:', data.length);
+            logger.debug('Subconvert API response received', { length: data.length });
             resolve(data);
           } else {
-            console.error('Subconvert API response status:', res.statusCode);
-            console.error('Subconvert API response content:', data.substring(0, 500));
+            logger.warn('Subconvert API returned non-200 status', { statusCode: res.statusCode, responseLength: data.length });
             reject(new Error(`Subconvert API returned status ${res.statusCode}`));
           }
         });

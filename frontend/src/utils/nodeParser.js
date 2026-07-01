@@ -3,13 +3,13 @@
 const NODE_TYPES = {
   SS: 'ss://',
   VMESS: 'vmess://',
-  TROJAN: 'trojan://',
   VLESS: 'vless://',
-  SOCKS: 'socks://',
-  SOCKS5: 'socks5://',
+  TROJAN: 'trojan://',
   HYSTERIA2: 'hysteria2://',
-  HY2: 'hy2://',
   TUIC: 'tuic://',
+  SOCKS5: 'socks5://',
+  SOCKS4: 'socks4://',
+  SOCKS: 'socks://',
   SNELL: 'snell,'
 };
 
@@ -20,14 +20,16 @@ export function isValidNodeLink(link) {
     const parts = link.split('=')[1]?.trim().split(',');
     return parts && parts.length >= 4 && parts[0].trim() === 'snell';
   }
-  return Object.values(NODE_TYPES).some((prefix) => lowerLink.startsWith(prefix));
+  return Object.values(NODE_TYPES)
+    .filter((prefix) => prefix !== NODE_TYPES.SNELL)
+    .some((prefix) => lowerLink.startsWith(prefix));
 }
 
 export function getNodeType(link) {
   const lowerLink = (link || '').toLowerCase();
   if (lowerLink.includes('=') && lowerLink.includes('snell,')) return 'snell';
   const entry = Object.entries(NODE_TYPES).find(([, prefix]) => lowerLink.startsWith(prefix));
-  return entry ? entry[0].toLowerCase() : '';
+  return entry ? entry[0].toLowerCase() : 'unknown';
 }
 
 export function safeBase64Decode(str) {
@@ -45,11 +47,11 @@ export function safeBase64Decode(str) {
 }
 
 export function extractNodeName(nodeLink) {
-  if (!nodeLink) return 'Unnamed Node';
+  if (!nodeLink) return '未命名节点';
 
   if (nodeLink.includes('snell,')) {
     const name = nodeLink.split('=')[0].trim();
-    return name || 'Unnamed Node';
+    return name || '未命名节点';
   }
 
   if (nodeLink.toLowerCase().startsWith('vmess://')) {
@@ -57,7 +59,7 @@ export function extractNodeName(nodeLink) {
       const config = JSON.parse(safeBase64Decode(nodeLink.substring(8)));
       if (config.ps) return config.ps;
     } catch {}
-    return 'Unnamed Node';
+    return '未命名节点';
   }
 
   const hashIndex = nodeLink.indexOf('#');
@@ -65,10 +67,10 @@ export function extractNodeName(nodeLink) {
     try {
       return decodeURIComponent(nodeLink.substring(hashIndex + 1));
     } catch {
-      return nodeLink.substring(hashIndex + 1) || 'Unnamed Node';
+      return nodeLink.substring(hashIndex + 1) || '未命名节点';
     }
   }
-  return 'Unnamed Node';
+  return '未命名节点';
 }
 
 // 将多行/含 base64 的内容解析为节点数组

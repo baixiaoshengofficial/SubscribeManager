@@ -57,11 +57,9 @@ function isValidNodeLink(link) {
   }
 
   // 检查标准协议前缀
-  return Object.values(NODE_TYPES).some(prefix =>
-    lowerLink.startsWith(prefix.toLowerCase())
-  ) || lowerLink.startsWith(NODE_TYPES.HYSTERIA2)
-    || lowerLink.startsWith(NODE_TYPES.SOCKS5)
-    || lowerLink.startsWith(NODE_TYPES.SOCKS4);
+  return Object.values(NODE_TYPES)
+    .filter(prefix => prefix !== NODE_TYPES.SNELL)
+    .some(prefix => lowerLink.startsWith(prefix.toLowerCase()));
 }
 
 /**
@@ -83,10 +81,6 @@ function getNodeType(link) {
       return type.toLowerCase();
     }
   }
-
-  if (lowerLink.startsWith(NODE_TYPES.HYSTERIA2)) return 'hysteria2';
-  if (lowerLink.startsWith(NODE_TYPES.SOCKS5)) return 'socks5';
-  if (lowerLink.startsWith(NODE_TYPES.SOCKS4)) return 'socks4';
 
   return 'unknown';
 }

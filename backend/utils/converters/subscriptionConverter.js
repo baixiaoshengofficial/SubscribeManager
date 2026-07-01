@@ -5,6 +5,7 @@ const { getProtocolFactory } = require('../../protocols/ProtocolFactory');
 const { loadTemplateFromUrl } = require('./clashConfigGenerator');
 const { buildSubconvertApiUrl, determineConversionStrategy } = require('./urlHandler');
 const https = require('https');
+const logger = require('../logger');
 
 /**
  * 通过 Subconvert API 生成配置
@@ -37,9 +38,8 @@ async function convertViaSubconvert(subconvertUrl, subscriptionUrl, targetFormat
           if (res.statusCode === 200) {
             resolve(data);
           } else {
-            console.error('Subconvert API 响应状态:', res.statusCode);
-            console.error('Subconvert API 响应内容:', data.substring(0, 500));
-            reject(new Error(`Subconvert API returned status ${res.statusCode}: ${data.substring(0, 200)}`));
+            logger.warn('Subconvert API returned non-200 status', { statusCode: res.statusCode, responseLength: data.length });
+            reject(new Error(`Subconvert API returned status ${res.statusCode}`));
           }
         });
       });
@@ -83,7 +83,7 @@ async function convertSubscription(content, targetFormat, customTemplate = null,
       try {
         templateContent = await loadTemplateFromUrl(customTemplate);
       } catch (error) {
-        console.error('[local] 模板加载失败，使用默认模板:', error.message);
+        logger.warn('Template loading failed, using default template', { message: error.message });
         templateContent = null;
       }
     } else {
@@ -104,7 +104,7 @@ async function convertSubscription(content, targetFormat, customTemplate = null,
         return convertedContent;
       }
     } catch (error) {
-      console.error('Subconvert 转换失败，降级到本地转换:', error.message);
+      logger.warn('Subconvert conversion failed, falling back to local conversion', { message: error.message });
       // 继续使用本地转换
     }
   }
@@ -139,7 +139,7 @@ async function convertSubscription(content, targetFormat, customTemplate = null,
     return formatOutput(processedNodes, targetFormat, templateContent);
 
   } catch (error) {
-    console.error(`Error processing subscription for ${targetFormat}:`, error.message);
+    logger.warn('Error processing subscription', { targetFormat, message: error.message });
     return '';
   }
 }

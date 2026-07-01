@@ -6,20 +6,13 @@ const NODE_TYPES = {
   VMESS: 'vmess://',
   VLESS: 'vless://',
   TROJAN: 'trojan://',
-  HYSTERIA: 'hysteria://',
+  HYSTERIA2: 'hysteria2://',
   TUIC: 'tuic://',
+  SOCKS5: 'socks5://',
+  SOCKS4: 'socks4://',
   SOCKS: 'socks://',
-  HTTP: 'http://',
-  HTTPS: 'https://',
-  SNELL: 'snell,',
-  WIREGUARD: 'wireguard://'
+  SNELL: 'snell,'
 };
-
-Object.defineProperties(NODE_TYPES, {
-  HYSTERIA2: { value: 'hysteria2://', enumerable: false },
-  SOCKS5: { value: 'socks5://', enumerable: false },
-  SOCKS4: { value: 'socks4://', enumerable: false }
-});
 
 // 支持的格式类型
 const SUPPORTED_FORMATS = {

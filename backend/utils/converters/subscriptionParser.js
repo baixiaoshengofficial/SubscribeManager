@@ -15,6 +15,7 @@ const SSProtocol = require('../../protocols/SSProtocol');
 const Hysteria2Protocol = require('../../protocols/Hysteria2Protocol');
 const TUICProtocol = require('../../protocols/TUICProtocol');
 const SOCKSProtocol = require('../../protocols/SOCKSProtocol');
+const logger = require('../logger');
 
 /**
  * 检测订阅格式
@@ -90,9 +91,7 @@ function detectSubscriptionFormat(content) {
  */
 async function parseSubscriptionNodes(content) {
   const format = detectSubscriptionFormat(content);
-  console.log('检测到订阅格式:', format);
-  console.log(`[parseSubscriptionNodes] 原始内容长度: ${content.length}`);
-  console.log(`[parseSubscriptionNodes] 原始内容预览: ${content.substring(0, 200)}`);
+  logger.debug('Detected subscription format', { format, length: content.length });
 
   let decodedContent = content;
 
@@ -103,7 +102,7 @@ async function parseSubscriptionNodes(content) {
       let contentToDecode = safeDecodeURIComponent(content);
       decodedContent = safeBase64Decode(contentToDecode);
     } catch (e) {
-      console.log('Base64 解码失败，使用原始内容');
+      logger.debug('Base64 decode failed, using original content');
     }
   }
 
@@ -135,11 +134,11 @@ async function parseClashNodes(content) {
   if (content.includes('proxies:') || content.includes('proxy-groups:')) {
     try {
       const config = YAML.load(content);
-      console.log('[parseClashNodes] YAML 解析成功');
+      logger.debug('Clash YAML parsed');
 
       // 支持 proxies 和 Proxy 两种键名
       const proxies = config.proxies || config.Proxy || [];
-      console.log(`[parseClashNodes] YAML 找到 ${proxies.length} 个节点`);
+      logger.debug('Clash YAML proxies found', { count: proxies.length });
 
       for (const proxy of proxies) {
         try {
@@ -149,14 +148,14 @@ async function parseClashNodes(content) {
             nodes.push(nodeLink);
           }
         } catch (e) {
-          console.error('解析 Clash 节点失败:', e.message);
+          logger.debug('Failed to parse Clash node', { message: e.message });
         }
       }
 
-      console.log(`[parseClashNodes] 成功转换 ${nodes.length} 个节点`);
+      logger.debug('Clash nodes converted', { count: nodes.length });
       return nodes;
     } catch (error) {
-      console.error('解析 Clash YAML 失败:', error.message);
+      logger.debug('Failed to parse Clash YAML', { message: error.message });
     }
   }
 
@@ -182,11 +181,11 @@ async function parseClashNodes(content) {
         nodes.push(nodeLink);
       }
     } catch (e) {
-      console.error('解析 Clash 逗号行失败:', e.message);
+      logger.debug('Failed to parse Clash comma node', { message: e.message });
     }
   }
 
-  console.log(`[parseClashNodes] 找到 ${nodes.length} 个节点`);
+  logger.debug('Clash nodes parsed', { count: nodes.length });
   return nodes;
 }
 
@@ -241,7 +240,7 @@ function convertClashNodeToUniversal(proxy) {
 
   const ProtocolClass = protocolMap[type.toLowerCase()];
   if (!ProtocolClass) {
-    console.log('不支持的 Clash 节点类型:', type);
+    logger.debug('Unsupported Clash node type', { type });
     return null;
   }
 
@@ -260,7 +259,7 @@ async function parseSurgeNodes(content) {
   const lines = content.split('\n');
   let inProxySection = false;
 
-  console.log(`[parseSurgeNodes] 开始解析，总行数: ${lines.length}`);
+  logger.debug('Start parsing Surge nodes', { lines: lines.length });
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -271,14 +270,14 @@ async function parseSurgeNodes(content) {
     // 检测是否进入 [Proxy] 区域
     if (trimmed === '[Proxy]') {
       inProxySection = true;
-      console.log('[parseSurgeNodes] 进入 [Proxy] 区域');
+      logger.debug('Entered Surge proxy section');
       continue;
     }
 
     // 检测是否离开 [Proxy] 区域
     if (trimmed.startsWith('[') && !trimmed.startsWith('[Proxy]')) {
       inProxySection = false;
-      console.log('[parseSurgeNodes] 离开 [Proxy] 区域');
+      logger.debug('Left Surge proxy section');
       continue;
     }
 
@@ -297,13 +296,13 @@ async function parseSurgeNodes(content) {
       uniqueNodes.add(node);
       nodes.push(node);
     } else if (node) {
-      console.log('[parseSurgeNodes] 跳过重复节点');
+      logger.debug('Skipped duplicate Surge node');
     } else {
-      console.log(`[parseSurgeNodes] 解析失败: ${trimmed.substring(0, 80)}`);
+      logger.debug('Failed to parse Surge line');
     }
   }
 
-  console.log(`[parseSurgeNodes] 解析完成 - 有效节点: ${nodes.length}`);
+  logger.debug('Surge nodes parsed', { count: nodes.length });
   return nodes;
 }
 
@@ -368,13 +367,13 @@ async function parseShadowsocksNodes(content) {
           nodes.push(node);
         }
       } catch (e) {
-        console.error('解析 Shadowsocks 节点失败:', e.message);
+        logger.debug('Failed to parse Shadowsocks node', { message: e.message });
       }
     }
 
     return nodes;
   } catch (error) {
-    console.error('解析 Shadowsocks JSON 失败:', error.message);
+    logger.debug('Failed to parse Shadowsocks JSON', { message: error.message });
     return [];
   }
 }
@@ -389,7 +388,7 @@ async function parseUniversalNodes(content) {
   const uniqueNodes = new Set();  // 使用 Set 去重
   const lines = content.split(/\r?\n/);
 
-  console.log(`[parseUniversalNodes] 内容行数: ${lines.length}`);
+  logger.debug('Start parsing universal nodes', { lines: lines.length });
 
   for (const line of lines) {
     const trimmedLine = line.trim();
@@ -397,7 +396,7 @@ async function parseUniversalNodes(content) {
 
     // 跳过不包含协议前缀的行（已经在 parseSubscriptionNodes 中完成 Base64 解码）
     if (!trimmedLine.includes('://')) {
-      console.log(`[parseUniversalNodes] 跳过无效行（无协议前缀）: ${trimmedLine.substring(0, 60)}`);
+      logger.debug('Skipped invalid universal line without protocol');
       continue;
     }
 
@@ -406,17 +405,17 @@ async function parseUniversalNodes(content) {
 
       // 检查是否重复
       if (uniqueNodes.has(nodeLink)) {
-        console.log(`[parseUniversalNodes] 发现重复节点，跳过`);
+        logger.debug('Skipped duplicate universal node');
       } else {
         uniqueNodes.add(nodeLink);
         nodes.push(nodeLink);
       }
     } catch (error) {
-      console.error('解析节点失败:', error.message);
+      logger.debug('Failed to parse universal node', { message: error.message });
     }
   }
 
-  console.log(`[parseUniversalNodes] 解析完成 - 总行数: ${lines.length}, 有效节点: ${nodes.length}, 跳过无效: ${lines.length - nodes.length}`);
+  logger.debug('Universal nodes parsed', { lines: lines.length, valid: nodes.length, skipped: lines.length - nodes.length });
   return nodes;
 }
 

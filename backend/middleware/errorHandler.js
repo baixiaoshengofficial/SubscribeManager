@@ -1,8 +1,14 @@
 const ApiError = require('../utils/ApiError');
 const { t } = require('../i18n');
+const logger = require('../utils/logger');
 
 function errorHandler(err, req, res, next) {
-  console.error(err);
+  logger.error('Request failed', {
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: err.statusCode || 500,
+    message: err.message
+  });
 
   const isApiError = err instanceof ApiError;
   const statusCode = isApiError

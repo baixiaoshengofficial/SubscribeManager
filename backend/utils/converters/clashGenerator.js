@@ -3,6 +3,7 @@
  */
 
 const https = require('https');
+const logger = require('../logger');
 
 /**
  * 使用自定义模板生成 Clash 配置
@@ -481,26 +482,26 @@ async function fetchRuleset(url) {
           if (res.statusCode === 200) {
             resolve(data);
           } else {
-            console.warn(`Failed to fetch ruleset from ${url}: status ${res.statusCode}`);
+            logger.warn('Failed to fetch ruleset', { url, statusCode: res.statusCode });
             resolve(''); // 失败时返回空字符串
           }
         });
       });
 
       req.on('error', (error) => {
-        console.warn(`Failed to fetch ruleset from ${url}: ${error.message}`);
+        logger.warn('Failed to fetch ruleset', { url, message: error.message });
         resolve(''); // 失败时返回空字符串
       });
 
       req.setTimeout(10000, () => {
         req.destroy();
-        console.warn(`Timeout fetching ruleset from ${url}`);
+        logger.warn('Timeout fetching ruleset', { url });
         resolve(''); // 超时返回空字符串
       });
 
       req.end();
     } catch (error) {
-      console.warn(`Failed to fetch ruleset from ${url}: ${error.message}`);
+      logger.warn('Failed to fetch ruleset', { url, message: error.message });
       resolve('');
     }
   });

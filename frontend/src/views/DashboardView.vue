@@ -420,130 +420,29 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import {
-  Plus, Refresh, Edit, Setting, Link, List, Grid, Connection, Operation,
+  Plus, Refresh, Edit, Setting, List, Grid, Connection, Operation,
   Open, TurnOff, Delete, Select, Close, Top, Bottom, CopyDocument, Upload,
-  Box, Lightning, Lock, Aim, Rank
+  Rank
 } from '@element-plus/icons-vue';
-import { api } from '../api/client';
-import { parseNodeContent, getNodeType } from '../utils/nodeParser';
 import { getSubscriptionUrl } from '../utils/subscriptionUrl';
-import { useNodeSortable } from '../composables/useNodeSortable';
+import { useDashboardData } from '../composables/useDashboardData';
+import { useBatchNodeActions } from '../composables/useBatchNodeActions';
+import { useNodeActions } from '../composables/useNodeActions';
+import { useSubscriptionActions } from '../composables/useSubscriptionActions';
+import { useSubconverterActions } from '../composables/useSubconverterActions';
+import { useImportActions } from '../composables/useImportActions';
 
 const { t } = useI18n();
-
-const subscriptions = ref([]);
-const loadingSubs = ref(false);
-const version = ref('');
-const expandedPaths = ref([]);
-const nodesMap = reactive({});
-const loadingNodes = reactive({});
-const viewModes = reactive({});
+const submitting = ref(false);
 const selectedMap = reactive({});
 const batchMode = reactive({});
-const tableRefs = {};
-const cardGridRefs = {};
-
-async function handleNodeReorder(path, oldIndex, newIndex) {
-  if (oldIndex === newIndex || oldIndex == null || newIndex == null) return;
-  const list = [...nodesMap[path]];
-  const [item] = list.splice(oldIndex, 1);
-  list.splice(newIndex, 0, item);
-  nodesMap[path] = list;
-  try {
-    await api.reorderNodes(path, list.map((n, order) => ({ id: n.id, order })));
-    toast('success', t('nodes.sort_updated'));
-  } catch (error) {
-    toast('error', error.message || t('nodes.sort_failed'));
-    await loadNodes(path);
-  }
-}
-
-const { refresh: refreshSortable, destroy: destroySortable } = useNodeSortable({
-  getExpanded: (path) => expandedPaths.value.includes(path),
-  getViewMode: (path) => viewModes[path] || 'card',
-  getBatchMode: (path) => Boolean(batchMode[path]),
-  getTableRef: (path) => tableRefs[path],
-  getCardGridRef: (path) => cardGridRefs[path],
-  onReorder: handleNodeReorder
-});
-
-const submitting = ref(false);
-const previewing = ref(false);
-const importing = ref(false);
-
-// ---- subscriptions dialogs ----
-const addSubVisible = ref(false);
-const editSubVisible = ref(false);
-const addSubFormRef = ref();
-const editSubFormRef = ref();
-const addSubForm = reactive({ name: '', path: '' });
-const editSubForm = reactive({ name: '', path: '', originalPath: '' });
-
-const subRules = {
-  name: [{ required: true, message: () => t('subscription.name_required'), trigger: 'blur' }],
-  path: [
-    { required: true, message: () => t('subscription.path_invalid'), trigger: 'blur' },
-    { pattern: /^[a-z0-9-]{5,50}$/, message: () => t('subscription.path_invalid'), trigger: 'blur' }
-  ]
-};
-
-// ---- node dialogs ----
-const addNodeVisible = ref(false);
-const editNodeVisible = ref(false);
-const addNodeForm = reactive({ path: '', content: '' });
-const editNodeForm = reactive({ path: '', id: null, content: '' });
-
-// ---- subconverter dialog ----
-const subconverterVisible = ref(false);
-const subconverterForm = reactive({ path: '', subconvert_url: '', custom_template: '', use_default_template: false });
-const clashPreviewVisible = ref(false);
-const clashPreview = ref('');
-
-// ---- import dialog ----
-const importVisible = ref(false);
-const importForm = reactive({ path: '', importType: 'universal', importUrl: '' });
-const importResult = ref(null);
-
-const importResultTitle = computed(() => {
-  if (!importResult.value) return '';
-  const d = importResult.value;
-  return `${t('import.imported')}: ${d.importedCount || 0} · ${t('import.updated')}: ${d.updatedCount || 0} · ${t('import.failed')}: ${d.failedCount || 0}`;
-});
-const importResultDetail = computed(() => {
-  if (!importResult.value) return '';
-  return `${t('import.total_after')}: ${importResult.value.totalAfterImport || 0}`;
-});
 
 function toast(type, message) {
   ElMessage({ type, message });
-}
-
-function clientLinks(path) {
-  return [
-    { key: 'universal', label: 'clients.universal', icon: Link, url: `/${path}`, importType: 'universal' },
-    { key: 'v2ray', label: 'clients.v2ray', icon: Aim, url: `/${path}/v2ray`, importType: 'v2ray' },
-    { key: 'surge', label: 'clients.surge', icon: Lightning, url: `/${path}/surge`, importType: 'surge' },
-    { key: 'clash', label: 'clients.clash', icon: Box, url: `/${path}/clash`, importType: 'clash' },
-    { key: 'shadowsocks', label: 'clients.shadowsocks', icon: Lock, url: `/${path}/shadowsocks`, importType: 'ss' }
-  ];
-}
-
-function openClientPage(url) {
-  window.open(getSubscriptionUrl(url), '_blank');
-}
-
-async function copyLink(url) {
-  await copyText(getSubscriptionUrl(url));
-}
-
-function displayNodeType(node) {
-  const stored = String(node?.type || '').trim().toLowerCase();
-  if (stored && stored !== 'unknown') return stored;
-  return getNodeType(node?.original_link) || t('nodes.type_unknown');
 }
 
 async function copyText(text) {
@@ -555,496 +454,104 @@ async function copyText(text) {
   }
 }
 
-function formatPreviewSize(length) {
-  if (length < 1024) return t('subconverter.preview_size_bytes', { size: length });
-  if (length < 1024 * 1024) return t('subconverter.preview_size_kb', { size: (length / 1024).toFixed(1) });
-  return t('subconverter.preview_size_mb', { size: (length / (1024 * 1024)).toFixed(2) });
+async function copyLink(url) {
+  await copyText(getSubscriptionUrl(url));
 }
 
-function downloadClashPreview() {
-  if (!clashPreview.value) return;
-  const blob = new Blob([clashPreview.value], { type: 'text/yaml;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `${subconverterForm.path || 'clash'}.yaml`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
+const {
+  subscriptions,
+  loadingSubs,
+  version,
+  expandedPaths,
+  nodesMap,
+  loadingNodes,
+  viewModes,
+  clientLinks,
+  openClientPage,
+  loadSubscriptions,
+  loadNodes,
+  toggleExpand,
+  setTableRef,
+  setCardGridRef,
+  onRowClick,
+  persistViewMode,
+  displayNodeType,
+  refreshSortable,
+  destroySortable
+} = useDashboardData({ t, toast, batchMode });
 
-// ---- data loading ----
-async function loadSubscriptions() {
-  loadingSubs.value = true;
-  try {
-    const result = await api.subscriptions();
-    subscriptions.value = result.data || [];
-    // auto-expand previously expanded & load nodes
-    for (const path of expandedPaths.value) {
-      await loadNodes(path);
-    }
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    loadingSubs.value = false;
-  }
-}
-
-async function loadNodes(path) {
-  loadingNodes[path] = true;
-  try {
-    const result = await api.nodes(path);
-    nodesMap[path] = result.data || [];
-    await refreshSortable(path);
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    loadingNodes[path] = false;
-  }
-}
-
-async function toggleExpand(path) {
-  const idx = expandedPaths.value.indexOf(path);
-  if (idx >= 0) {
-    expandedPaths.value.splice(idx, 1);
-    destroySortable(path);
-  } else {
-    expandedPaths.value.push(path);
-    ensureViewMode(path);
-    if (!nodesMap[path]) {
-      await loadNodes(path);
-    } else {
-      await refreshSortable(path);
-    }
-  }
-}
-
-function setTableRef(path, el) {
-  if (el) tableRefs[path] = el;
-}
-
-function setCardGridRef(path, el) {
-  if (el) cardGridRefs[path] = el;
-}
-
-function onRowClick() {
-  // placeholder to avoid row-click swallowing when not in batch mode
-}
-
-function persistViewMode(path) {
-  localStorage.setItem(`nodeViewMode:${path}`, viewModes[path]);
-  refreshSortable(path);
-}
-
-function ensureViewMode(path) {
-  if (viewModes[path]) return;
-  const saved = localStorage.getItem(`nodeViewMode:${path}`);
-  viewModes[path] = saved === 'table' || saved === 'card'
-    ? saved
-    : (window.innerWidth <= 768 ? 'card' : 'table');
-}
-
-function initBatchState(path) {
-  if (!selectedMap[path]) selectedMap[path] = [];
-  if (batchMode[path] === undefined) batchMode[path] = false;
-}
-
-// ---- batch ----
-function enterBatch(path) {
-  initBatchState(path);
-  batchMode[path] = true;
-  selectedMap[path] = [];
-  destroySortable(path);
-  toast('info', t('nodes.batch_select_tip'));
-}
-
-function exitBatch(path) {
-  batchMode[path] = false;
-  selectedMap[path] = [];
-  refreshSortable(path);
-}
-
-function onRowSelect(path, id, checked) {
-  initBatchState(path);
-  const set = new Set(selectedMap[path]);
-  if (checked) set.add(id); else set.delete(id);
-  selectedMap[path] = Array.from(set);
-}
-
-function onSelectAllChange(path, checked) {
-  initBatchState(path);
-  selectedMap[path] = checked ? (nodesMap[path] || []).map((n) => n.id) : [];
-}
-
-function allSelected(path) {
-  const nodes = nodesMap[path] || [];
-  if (!nodes.length) return false;
-  const sel = selectedMap[path] || [];
-  return nodes.every((n) => sel.includes(n.id));
-}
-
-function toggleSelectAll(path) {
-  if (allSelected(path)) {
-    selectedMap[path] = [];
-  } else {
-    selectedMap[path] = (nodesMap[path] || []).map((n) => n.id);
-  }
-}
-
-async function batchDelete(path) {
-  const ids = selectedMap[path] || [];
-  if (!ids.length) {
-    toast('warning', t('nodes.batch_delete_none'));
-    return;
-  }
-  try {
-    await ElMessageBox.confirm(t('nodes.batch_delete_confirm', { count: ids.length }), t('common.confirm'), { type: 'warning' });
-  } catch {
-    return;
-  }
-  let success = 0;
-  let fail = 0;
-  toast('info', t('nodes.batch_deleting'));
-  for (const id of ids) {
-    try {
-      await api.deleteNode(path, id);
-      success++;
-    } catch {
-      fail++;
-    }
-  }
-  exitBatch(path);
-  await loadNodes(path);
-  await loadSubscriptions();
-  if (fail === 0) {
-    toast('success', t('nodes.deleted'));
-  } else {
-    toast('warning', t('nodes.batch_delete_done', { success, failed: fail }));
-  }
-}
-
-async function batchToggle(path, enabled) {
-  const ids = selectedMap[path] || [];
-  if (!ids.length) {
-    toast('warning', t('nodes.batch_toggle_none'));
-    return;
-  }
-  const action = enabled ? t('actions.enable') : t('actions.disable');
-  try {
-    await ElMessageBox.confirm(t('nodes.batch_toggle_confirm', { action, count: ids.length }), t('common.confirm'), { type: 'warning' });
-  } catch {
-    return;
-  }
-  let success = 0;
-  let fail = 0;
-  toast('info', t('nodes.batch_toggling', { action }));
-  for (const id of ids) {
-    try {
-      await api.toggleNode(path, id, enabled);
-      success++;
-    } catch {
-      fail++;
-    }
-  }
-  exitBatch(path);
-  await loadNodes(path);
-  await loadSubscriptions();
-  if (fail === 0) {
-    toast('success', t('common.success'));
-  } else {
-    toast('warning', t('nodes.batch_toggle_done', { action, success, failed: fail }));
-  }
-}
-
-// ---- node actions ----
-async function moveNode(path, node, direction) {
-  const list = nodesMap[path] || [];
-  const index = list.findIndex((n) => n.id === node.id);
-  const target = index + direction;
-  if (index < 0 || target < 0 || target >= list.length) return;
-  const reordered = [...list];
-  [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
-  try {
-    await api.reorderNodes(path, reordered.map((n, order) => ({ id: n.id, order })));
-    nodesMap[path] = reordered;
-  } catch (error) {
-    toast('error', t('nodes.sort_failed') + ': ' + error.message);
-    await loadNodes(path);
-  }
-}
-
-async function toggleNode(path, node) {
-  try {
-    await api.toggleNode(path, node.id, !node.enabled);
-    toast('success', t(node.enabled ? 'nodes.disabled' : 'nodes.enabled'));
-    await loadNodes(path);
-  } catch (error) {
-    toast('error', error.message);
-  }
-}
-
-async function deleteNode(path, node) {
-  try {
-    await ElMessageBox.confirm(t('nodes.delete_confirm'), t('common.confirm'), { type: 'warning' });
-  } catch {
-    return;
-  }
-  try {
-    await api.deleteNode(path, node.id);
-    toast('success', t('nodes.deleted'));
-    await loadNodes(path);
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  }
-}
-
-function openAddNode(path) {
-  addNodeForm.path = path;
-  addNodeForm.content = '';
-  addNodeVisible.value = true;
-}
-
-async function createNode() {
-  if (!addNodeForm.content.trim()) {
-    toast('warning', t('nodes.content_required'));
-    return;
-  }
-  const parsed = parseNodeContent(addNodeForm.content);
-  if (!parsed.length) {
-    toast('warning', t('nodes.unsupported_format'));
-    return;
-  }
-  submitting.value = true;
-  let success = 0;
-  let fail = 0;
-  const baseOrder = Date.now();
-  try {
-    for (let i = 0; i < parsed.length; i++) {
-      try {
-        await api.createNode(addNodeForm.path, {
-          name: parsed[i].name,
-          content: parsed[i].content,
-          order: baseOrder + i
-        });
-        success++;
-      } catch {
-        fail++;
-      }
-    }
-    addNodeVisible.value = false;
-    await loadNodes(addNodeForm.path);
-    await loadSubscriptions();
-    if (parsed.length === 1) {
-      toast('success', t('nodes.added'));
-    } else {
-      toast(success > 0 ? 'success' : 'warning', t('nodes.add_result', { success, failed: fail }));
-    }
-  } finally {
-    submitting.value = false;
-  }
-}
-
-function openEditNode(path, node) {
-  editNodeForm.path = path;
-  editNodeForm.id = node.id;
-  editNodeForm.content = node.original_link;
-  editNodeVisible.value = true;
-}
-
-async function updateNode() {
-  if (!editNodeForm.content.trim()) {
-    toast('warning', t('nodes.content_required'));
-    return;
-  }
-  submitting.value = true;
-  try {
-    await api.updateNode(editNodeForm.path, editNodeForm.id, { content: editNodeForm.content.trim() });
-    toast('success', t('nodes.edited'));
-    editNodeVisible.value = false;
-    await loadNodes(editNodeForm.path);
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    submitting.value = false;
-  }
-}
-
-// ---- subscription actions ----
-function openAddSubscription() {
-  addSubForm.name = '';
-  addSubForm.path = '';
-  addSubVisible.value = true;
-}
-
-async function createSubscription() {
-  try {
-    await addSubFormRef.value?.validate();
-  } catch {
-    return;
-  }
-  submitting.value = true;
-  try {
-    await api.createSubscription({ name: addSubForm.name.trim(), path: addSubForm.path.trim() });
-    toast('success', t('subscription.created'));
-    addSubVisible.value = false;
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    submitting.value = false;
-  }
-}
-
-function openEditSubscription(sub) {
-  editSubForm.originalPath = sub.path;
-  editSubForm.name = sub.name;
-  editSubForm.path = sub.path;
-  editSubVisible.value = true;
-}
-
-async function updateSubscription() {
-  try {
-    await editSubFormRef.value?.validate();
-  } catch {
-    return;
-  }
-  submitting.value = true;
-  try {
-    const existing = subscriptions.value.find((s) => s.path === editSubForm.originalPath);
-    await api.updateSubscription(editSubForm.originalPath, {
-      name: editSubForm.name.trim(),
-      path: editSubForm.path.trim(),
-      subconvert_url: existing?.subconvert_url || null,
-      custom_template: existing?.custom_template || null,
-      use_default_template: Boolean(existing?.use_default_template)
-    });
-    toast('success', t('subscription.updated'));
-    editSubVisible.value = false;
-    // update expanded paths if renamed
-    if (editSubForm.path.trim() !== editSubForm.originalPath) {
-      expandedPaths.value = expandedPaths.value.map((p) => (p === editSubForm.originalPath ? editSubForm.path.trim() : p));
-    }
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    submitting.value = false;
-  }
-}
-
-async function confirmDeleteSubscription() {
-  try {
-    await ElMessageBox.confirm(t('subscription.delete_confirm'), t('common.confirm'), { type: 'warning' });
-  } catch {
-    return;
-  }
-  submitting.value = true;
-  try {
-    await api.deleteSubscription(editSubForm.originalPath);
-    toast('success', t('subscription.deleted'));
-    editSubVisible.value = false;
-    expandedPaths.value = expandedPaths.value.filter((p) => p !== editSubForm.originalPath);
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    submitting.value = false;
-  }
-}
-
-// ---- subconverter ----
-function openSubconverter(sub) {
-  subconverterForm.path = sub.path;
-  subconverterForm.subconvert_url = sub.subconvert_url || '';
-  subconverterForm.custom_template = sub.custom_template || '';
-  subconverterForm.use_default_template = sub.use_default_template === 1 || sub.use_default_template === true;
-  subconverterVisible.value = true;
-}
-
-function onSubconverterInput() {
-  // use_default_template 仅在两者都为空时显示
-}
-
-async function saveSubconverter() {
-  submitting.value = true;
-  try {
-    await api.saveSubconverter(subconverterForm.path, {
-      subconvert_url: subconverterForm.subconvert_url.trim() || null,
-      custom_template: subconverterForm.custom_template.trim() || null,
-      use_default_template: subconverterForm.use_default_template
-    });
-    toast('success', t('subconverter.updated'));
-    subconverterVisible.value = false;
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    submitting.value = false;
-  }
-}
-
-async function previewClash() {
-  previewing.value = true;
-  try {
-    const result = await api.generateClash({
-      subscriptionPath: subconverterForm.path,
-      subconvertUrl: subconverterForm.subconvert_url.trim() || undefined,
-      templateUrl: subconverterForm.custom_template.trim() || undefined
-    });
-    clashPreview.value = result.data?.config || '';
-    clashPreviewVisible.value = true;
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    previewing.value = false;
-  }
-}
-
-// ---- import ----
-function openImport(path, importType) {
-  importForm.path = path;
-  importForm.importType = importType || 'universal';
-  importForm.importUrl = '';
-  importResult.value = null;
-  importVisible.value = true;
-}
-
-async function importNodes() {
-  if (!importForm.importUrl.trim()) {
-    toast('warning', t('import.url_required'));
-    return;
-  }
-  try {
-    new URL(importForm.importUrl.trim());
-  } catch {
-    toast('warning', t('import.invalid_url'));
-    return;
-  }
-  importing.value = true;
-  try {
-    const result = await api.importNodes(importForm.path, importForm.importUrl.trim(), importForm.importType);
-    importResult.value = result.data || {};
-    toast('success', t('import.imported') + ': ' + (result.data?.importedCount || 0));
-    await loadNodes(importForm.path);
-    await loadSubscriptions();
-  } catch (error) {
-    toast('error', error.message);
-  } finally {
-    importing.value = false;
-  }
-}
-
-// ---- version ----
-async function loadVersion() {
-  try {
-    const result = await api.version();
-    version.value = result.version;
-  } catch {}
-}
-
-onMounted(async () => {
-  await loadSubscriptions();
-  loadVersion();
+const {
+  enterBatch,
+  exitBatch,
+  onRowSelect,
+  onSelectAllChange,
+  allSelected,
+  toggleSelectAll,
+  batchDelete,
+  batchToggle
+} = useBatchNodeActions({
+  t,
+  toast,
+  nodesMap,
+  selectedMap,
+  batchMode,
+  refreshSortable,
+  destroySortable,
+  loadNodes,
+  loadSubscriptions
 });
+
+const {
+  addNodeVisible,
+  editNodeVisible,
+  addNodeForm,
+  editNodeForm,
+  moveNode,
+  toggleNode,
+  deleteNode,
+  openAddNode,
+  createNode,
+  openEditNode,
+  updateNode
+} = useNodeActions({ t, toast, submitting, nodesMap, loadNodes, loadSubscriptions });
+
+const {
+  addSubVisible,
+  editSubVisible,
+  addSubFormRef,
+  editSubFormRef,
+  addSubForm,
+  editSubForm,
+  subRules,
+  openAddSubscription,
+  createSubscription,
+  openEditSubscription,
+  updateSubscription,
+  confirmDeleteSubscription
+} = useSubscriptionActions({ t, toast, submitting, subscriptions, expandedPaths, loadSubscriptions });
+
+const {
+  previewing,
+  subconverterVisible,
+  subconverterForm,
+  clashPreviewVisible,
+  clashPreview,
+  formatPreviewSize,
+  downloadClashPreview,
+  openSubconverter,
+  onSubconverterInput,
+  saveSubconverter,
+  previewClash
+} = useSubconverterActions({ t, toast, submitting, loadSubscriptions });
+
+const {
+  importing,
+  importVisible,
+  importForm,
+  importResult,
+  importResultTitle,
+  importResultDetail,
+  openImport,
+  importNodes
+} = useImportActions({ t, toast, loadNodes, loadSubscriptions });
 </script>

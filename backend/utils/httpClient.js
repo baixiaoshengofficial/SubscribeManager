@@ -24,7 +24,7 @@ function fetchUrl(url, timeoutMs = 30000) {
           resolve(data);
           return;
         }
-        reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 300)}`));
+        reject(new Error(`HTTP ${res.statusCode}, response length ${data.length}`));
       });
     });
 

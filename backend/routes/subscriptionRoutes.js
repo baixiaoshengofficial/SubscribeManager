@@ -4,6 +4,7 @@ const { generateSubscriptionContent } = require('../services/subscriptionService
 const { ConversionService } = require('../services/conversionService');
 const { getPublicBaseUrl } = require('../utils/converters/urlHandler');
 const { safeBase64Encode, filterSnellNodes } = require('../utils');
+const logger = require('../utils/logger');
 
 // 获取订阅内容 - 支持 /path 格式
 router.get('/:path', async (req, res) => {
@@ -90,7 +91,7 @@ async function handleSubscriptionRequest(req, res, path, format) {
     }
 
   } catch (error) {
-    console.error('Subscription generation error:', error);
+    logger.error('Subscription generation error', { message: error.message });
     res.status(500).json({
       error: { code: 500, message: 'Internal server error', details: error.message }
     });
@@ -121,7 +122,7 @@ async function handleNodesOnlyRequest(_req, res, path, format) {
     res.send(utf8Bom + nodesOnlyContent);
 
   } catch (error) {
-    console.error('Nodes-only subscription generation error:', error);
+    logger.error('Nodes-only subscription generation error', { message: error.message });
     res.status(500).json({
       error: { code: 500, message: 'Internal server error', details: error.message }
     });

@@ -3,6 +3,7 @@ const router = express.Router();
 const subscriptionService = require('../services/subscriptionService');
 const nodeService = require('../services/nodeService');
 const { importNodes } = require('../services/importService');
+const { ConversionService } = require('../services/conversionService');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 
@@ -111,49 +112,26 @@ router.post('/subscriptions/:path/import-nodes', asyncHandler(async (req, res) =
 
 // Clash 配置生成 - 使用 Subconvert API 和自定义模板
 const { validateAndLoadTemplate } = require('../utils/converters/clashConfigGenerator');
-const { buildSubconvertApiUrl, normalizeTemplateUrl, resolveSubconvertDirectUrl, getPublicBaseUrl } = require('../utils/converters/urlHandler');
-const { fetchUrl } = require('../utils/httpClient');
-const { filterSnellNodes } = require('../utils');
 
 router.post('/clash/generate', asyncHandler(async (req, res) => {
   const { subconvertUrl, templateUrl, subscriptionPath } = req.body || {};
-
-  if (!subconvertUrl?.trim()) {
-    throw new ApiError(400, 'subconverter.subconvert_url_required');
-  }
-  if (!subscriptionPath?.trim()) {
-    throw new ApiError(400, 'subscription.not_found');
-  }
-
-  const subscriptionData = await subscriptionService.generateSubscriptionContent(subscriptionPath.trim());
-  if (!subscriptionData) {
-    throw new ApiError(404, 'subscription.not_found');
-  }
-
   const requestBaseUrl = `${req.protocol}://${req.get('host')}`;
-  const publicBase = getPublicBaseUrl(requestBaseUrl);
-  const subscriptionSourceUrl = `${publicBase}/${subscriptionPath.trim()}`;
-  const nodeContent = filterSnellNodes(subscriptionData.nodes);
-  const directUrl = resolveSubconvertDirectUrl(subscriptionSourceUrl, nodeContent);
-
-  const fullUrl = buildSubconvertApiUrl(
-    subconvertUrl.trim(),
-    null,
-    'clash',
-    normalizeTemplateUrl(templateUrl),
-    directUrl
-  );
 
   try {
-    const config = await fetchUrl(fullUrl);
+    const data = await new ConversionService().generateClashPreview({
+      subconvertUrl,
+      templateUrl,
+      subscriptionPath,
+      requestBaseUrl
+    });
     res.json({
       success: true,
-      data: {
-        config,
-        length: config.length
-      }
+      data
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     throw new ApiError(500, 'clash.generate_failed', { detail: error.message });
   }
 }));

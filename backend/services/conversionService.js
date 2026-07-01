@@ -5,6 +5,9 @@ const { convertSubscription } = require('../utils/converters/subscriptionConvert
 const { buildSubconvertApiUrl, normalizeTemplateUrl, resolveSubconvertDirectUrl, getPublicBaseUrl } = require('../utils/converters/urlHandler');
 const { fetchUrl } = require('../utils/httpClient');
 const { filterSnellNodes } = require('../utils');
+const logger = require('../utils/logger');
+const subscriptionService = require('./subscriptionService');
+const ApiError = require('../utils/ApiError');
 
 class ConversionService {
   /**
@@ -49,6 +52,38 @@ class ConversionService {
     }
   }
 
+  async generateClashPreview({ subconvertUrl, templateUrl, subscriptionPath, requestBaseUrl }) {
+    if (!subconvertUrl?.trim()) {
+      throw new ApiError(400, 'subconverter.subconvert_url_required');
+    }
+    if (!subscriptionPath?.trim()) {
+      throw new ApiError(400, 'subscription.not_found');
+    }
+
+    const subscriptionData = await subscriptionService.generateSubscriptionContent(subscriptionPath.trim());
+    if (!subscriptionData) {
+      throw new ApiError(404, 'subscription.not_found');
+    }
+
+    const publicBase = getPublicBaseUrl(requestBaseUrl);
+    const subscriptionSourceUrl = `${publicBase}/${subscriptionPath.trim()}`;
+    const nodeContent = filterSnellNodes(subscriptionData.nodes);
+    const directUrl = resolveSubconvertDirectUrl(subscriptionSourceUrl, nodeContent);
+
+    const config = await this._callSubconvertApi(
+      subconvertUrl.trim(),
+      null,
+      'clash',
+      normalizeTemplateUrl(templateUrl),
+      directUrl
+    );
+
+    return {
+      config,
+      length: config.length
+    };
+  }
+
   /**
    * 通过 Subconvert API 转换
    * @private
@@ -67,7 +102,7 @@ class ConversionService {
             subscriptionSourceUrl = `${publicBase}/${subscriptionPath}`;
           }
         } catch (e) {
-          console.error('[ConversionService] 解析 subscriptionUrl 失败:', e.message);
+          logger.debug('Failed to parse subscription URL', { message: e.message });
         }
       }
 
@@ -86,7 +121,7 @@ class ConversionService {
 
       return convertedContent;
     } catch (error) {
-      console.error('[ConversionService] Subconvert 转换失败，降级到本地转换:', error.message);
+      logger.warn('Subconvert conversion failed, falling back to local conversion', { message: error.message });
       // 降级时，使用默认完整模板
       return await this._convertLocally(content, format, null);
     }
@@ -98,7 +133,7 @@ class ConversionService {
    */
   async _callSubconvertApi(subconvertUrl, subscriptionUrl, format, customTemplateUrl, directUrl = null) {
     const fullUrl = buildSubconvertApiUrl(subconvertUrl, subscriptionUrl, format, customTemplateUrl, directUrl);
-    console.log('[ConversionService] Subconvert API 请求 URL:', fullUrl);
+    logger.debug('Subconvert API request URL', { url: fullUrl });
     return fetchUrl(fullUrl);
   }
 

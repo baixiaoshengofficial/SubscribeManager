@@ -3,6 +3,7 @@ const { open } = require('sqlite');
 const config = require('./config');
 const fs = require('node:fs');
 const path = require('node:path');
+const logger = require('./utils/logger');
 
 let db;
 
@@ -11,7 +12,7 @@ async function initializeDatabase() {
   const dbDir = path.dirname(config.databasePath);
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
-    console.log(`创建数据目录: ${dbDir}`);
+    logger.info('Created database directory', { path: dbDir });
   }
 
   db = await open({
@@ -63,16 +64,16 @@ async function createTables() {
   // Migration: rename subconvert_api to subconvert_url (for existing databases)
   try {
     // Check if old column exists
-    const tables = await db.exec(`PRAGMA table_info(subscriptions)`);
-    const hasOldColumn = tables.some(col => col.name === 'subconvert_api');
-    const hasNewColumn = tables.some(col => col.name === 'subconvert_url');
+    const columns = await db.all(`PRAGMA table_info(subscriptions)`);
+    const hasOldColumn = columns.some(col => col.name === 'subconvert_api');
+    const hasNewColumn = columns.some(col => col.name === 'subconvert_url');
 
     if (hasOldColumn && hasNewColumn) {
       // Migrate data from old column to new column
       await db.exec(`UPDATE subscriptions SET subconvert_url = subconvert_api WHERE subconvert_url IS NULL AND subconvert_api IS NOT NULL`);
     }
-  } catch {
-    // Migration error, ignore
+  } catch (error) {
+    logger.warn('Subscription column migration failed', { message: error.message });
   }
 
   try {

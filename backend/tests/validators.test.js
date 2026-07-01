@@ -103,6 +103,8 @@ describe('Node Validators', () => {
 
     it('should reject invalid links', () => {
       expect(isValidNodeLink('invalid://link')).toBe(false);
+      expect(isValidNodeLink('http://example.com')).toBe(false);
+      expect(isValidNodeLink('https://example.com')).toBe(false);
       expect(isValidNodeLink('not-a-link')).toBe(false);
       expect(isValidNodeLink('')).toBe(false);
       expect(isValidNodeLink(null)).toBe(false);
@@ -138,7 +140,7 @@ describe('Node Validators', () => {
         expect(typeof prefix).toBe('string');
         expect(prefix.length).toBeGreaterThan(0);
         if (prefix !== 'snell,') {
-          expect(prefix).toMatch(/^[a-z]+:\/\//);
+          expect(prefix).toMatch(/^[a-z0-9]+:\/\//);
         }
       });
     });
