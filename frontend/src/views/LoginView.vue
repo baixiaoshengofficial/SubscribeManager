@@ -14,7 +14,6 @@
         :model="form"
         :rules="rules"
         label-position="top"
-        :autocomplete="credentialAutocompleteAllowed ? 'on' : 'off'"
         @submit.prevent="submit"
       >
         <el-form-item :label="t('login.username')" prop="username">
@@ -23,7 +22,6 @@
             data-testid="login-username"
             :prefix-icon="User"
             name="username"
-            :autocomplete="credentialAutocompleteAllowed ? 'username' : 'off'"
             :placeholder="t('login.username')"
           />
         </el-form-item>
@@ -34,11 +32,15 @@
             type="password"
             :prefix-icon="Lock"
             name="password"
-            :autocomplete="credentialAutocompleteAllowed ? 'current-password' : 'new-password'"
             show-password
             :placeholder="t('login.password')"
             @keyup.enter="submit"
           />
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="rememberMe" data-testid="login-remember" @change="onRememberMeChange">
+            {{ t('login.remember_me') }}
+          </el-checkbox>
         </el-form-item>
         <el-button
           type="primary"
@@ -53,25 +55,32 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import { api } from '../api/client';
-import { isCredentialAutocompleteAllowed } from '../utils/credentialAutocomplete';
+import { loadRememberedCredentials, saveRememberedCredentials, clearRememberedCredentials } from '../utils/rememberedCredentials';
 
 const { t } = useI18n();
 const emit = defineEmits(['success']);
 
 const formRef = ref();
 const loading = ref(false);
-const form = reactive({ username: '', password: '' });
-const credentialAutocompleteAllowed = computed(() => isCredentialAutocompleteAllowed());
+const rememberMe = ref(false);
+const form = reactive(loadRememberedCredentials());
+rememberMe.value = Boolean(form.username || form.password);
 
 const rules = {
   username: [{ required: true, message: '', trigger: 'blur' }],
   password: [{ required: true, message: '', trigger: 'blur' }]
 };
+
+function onRememberMeChange(value) {
+  if (!value) {
+    clearRememberedCredentials();
+  }
+}
 
 async function submit() {
   try {
@@ -83,6 +92,9 @@ async function submit() {
   try {
     await api.login(form);
     ElMessage.success(t('login.success'));
+    if (rememberMe.value) {
+      saveRememberedCredentials({ username: form.username, password: form.password });
+    }
     emit('success');
   } catch (err) {
     ElMessage.error(err?.message || t('login.request_error'));

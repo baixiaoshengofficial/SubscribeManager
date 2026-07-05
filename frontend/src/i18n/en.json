@@ -73,7 +73,8 @@
     "submitting": "Signing in...",
     "success": "Login successful",
     "error": "Incorrect username or password",
-    "request_error": "Login request failed, please try again"
+    "request_error": "Login request failed, please try again",
+    "remember_me": "Remember me"
   },
   "logout_sucess": "Logged out successfully",
   "logout_failed": "Logout failed, please try again",
