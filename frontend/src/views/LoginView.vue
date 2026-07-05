@@ -14,6 +14,7 @@
         :model="form"
         :rules="rules"
         label-position="top"
+        autocomplete="off"
         @submit.prevent="submit"
       >
         <el-form-item :label="t('login.username')" prop="username">
@@ -22,6 +23,7 @@
             data-testid="login-username"
             :prefix-icon="User"
             name="username"
+            autocomplete="off"
             :placeholder="t('login.username')"
           />
         </el-form-item>
@@ -32,6 +34,7 @@
             type="password"
             :prefix-icon="Lock"
             name="password"
+            autocomplete="new-password"
             show-password
             :placeholder="t('login.password')"
             @keyup.enter="submit"
