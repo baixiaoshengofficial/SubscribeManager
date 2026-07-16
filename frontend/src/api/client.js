@@ -52,8 +52,8 @@ export const api = {
   reorderNodes: (path, orders) => request(`/api/subscriptions/${path}/nodes/reorder`, { method: 'POST', body: jsonBody({ orders }) }),
 
   // import & clash
-  importNodes: (path, importUrl, importType) =>
-    request(`/api/subscriptions/${path}/import-nodes`, { method: 'POST', body: jsonBody({ importUrl, importType }) }),
+  importNodes: (path, importUrls) =>
+    request(`/api/subscriptions/${path}/import-nodes`, { method: 'POST', body: jsonBody({ importUrls }) }),
   generateClash: (data) => request('/api/clash/generate', { method: 'POST', body: jsonBody(data) }),
   loadTemplate: (templateUrl) => request('/api/clash/load-template', { method: 'POST', body: jsonBody({ templateUrl }) })
 };

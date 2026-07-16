@@ -10,11 +10,11 @@ export function applyTheme(value) {
   if (value === 'dark') {
     html.classList.add('dark');
     body.setAttribute('data-theme', 'dark');
-    if (meta) meta.setAttribute('content', '#0e0d0c');
+    if (meta) meta.setAttribute('content', '#111615');
   } else {
     html.classList.remove('dark');
     body.setAttribute('data-theme', 'light');
-    if (meta) meta.setAttribute('content', '#f5f1ea');
+    if (meta) meta.setAttribute('content', '#f6f8f7');
   }
 }
 

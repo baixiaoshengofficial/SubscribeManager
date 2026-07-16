@@ -39,6 +39,47 @@ function extractNodeName(nodeLink) {
 }
 
 /**
+ * 将节点名称写回原始链接。
+ * VMess 使用 Base64 JSON 内的 ps 字段，Snell 使用等号前的名称，其他协议使用 URL fragment。
+ * @param {string} nodeLink 节点链接
+ * @param {string} name 节点名称
+ * @returns {string} 写入名称后的节点链接
+ */
+function setNodeName(nodeLink, name) {
+  const normalizedName = String(name || '').trim();
+  if (!nodeLink || !normalizedName) return nodeLink;
+
+  if (nodeLink.toLowerCase().startsWith(NODE_TYPES.VMESS)) {
+    try {
+      const prefix = nodeLink.substring(0, 8);
+      const encodedConfig = nodeLink.substring(8);
+      const config = JSON.parse(safeBase64Decode(encodedConfig));
+      config.ps = normalizedName;
+
+      let updatedConfig = Buffer.from(JSON.stringify(config)).toString('base64');
+      if (encodedConfig.includes('-') || encodedConfig.includes('_')) {
+        updatedConfig = updatedConfig
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
+      }
+      return `${prefix}${updatedConfig}`;
+    } catch {
+      return nodeLink;
+    }
+  }
+
+  if (nodeLink.toLowerCase().includes('=snell,')) {
+    const separatorIndex = nodeLink.indexOf('=');
+    return `${normalizedName}${nodeLink.substring(separatorIndex)}`;
+  }
+
+  const hashIndex = nodeLink.indexOf('#');
+  const linkWithoutName = hashIndex === -1 ? nodeLink : nodeLink.substring(0, hashIndex);
+  return `${linkWithoutName}#${encodeURIComponent(normalizedName)}`;
+}
+
+/**
  * 验证节点链接格式
  * @param {string} link 节点链接
  * @returns {boolean} 是否为有效链接
@@ -142,6 +183,7 @@ function parseNodeContent(content) {
 
 module.exports = {
   extractNodeName,
+  setNodeName,
   isValidNodeLink,
   getNodeType,
   tryDecodeNodeContent,

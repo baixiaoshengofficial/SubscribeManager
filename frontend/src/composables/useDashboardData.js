@@ -3,6 +3,12 @@ import { List, Link, Aim, Lightning, Box, Lock } from '@element-plus/icons-vue';
 import { api } from '../api/client';
 import { getNodeType } from '../utils/nodeParser';
 import { getSubscriptionUrl } from '../utils/subscriptionUrl';
+import {
+  buildNodeCardItems,
+  getNodeSourceLabel,
+  getSourceRowspan,
+  groupNodesBySource
+} from '../utils/nodeGrouping';
 import { useNodeSortable } from './useNodeSortable';
 
 export function useDashboardData({ t, toast, batchMode }) {
@@ -13,6 +19,7 @@ export function useDashboardData({ t, toast, batchMode }) {
   const nodesMap = reactive({});
   const loadingNodes = reactive({});
   const viewModes = reactive({});
+  const groupingModes = reactive({});
   const tableRefs = {};
   const cardGridRefs = {};
 
@@ -34,6 +41,7 @@ export function useDashboardData({ t, toast, batchMode }) {
   const { refresh: refreshSortable, destroy: destroySortable } = useNodeSortable({
     getExpanded: (path) => expandedPaths.value.includes(path),
     getViewMode: (path) => viewModes[path] || 'card',
+    getGrouped: (path) => groupingModes[path] !== 'flat',
     getBatchMode: (path) => Boolean(batchMode[path]),
     getTableRef: (path) => tableRefs[path],
     getCardGridRef: (path) => cardGridRefs[path],
@@ -42,11 +50,11 @@ export function useDashboardData({ t, toast, batchMode }) {
 
   function clientLinks(path) {
     return [
-      { key: 'universal', label: 'clients.universal', icon: Link, url: `/${path}`, importType: 'universal' },
-      { key: 'v2ray', label: 'clients.v2ray', icon: Aim, url: `/${path}/v2ray`, importType: 'v2ray' },
-      { key: 'surge', label: 'clients.surge', icon: Lightning, url: `/${path}/surge`, importType: 'surge' },
-      { key: 'clash', label: 'clients.clash', icon: Box, url: `/${path}/clash`, importType: 'clash' },
-      { key: 'shadowsocks', label: 'clients.shadowsocks', icon: Lock, url: `/${path}/shadowsocks`, importType: 'ss' }
+      { key: 'universal', label: 'clients.universal', icon: Link, url: `/${path}` },
+      { key: 'v2ray', label: 'clients.v2ray', icon: Aim, url: `/${path}/v2ray` },
+      { key: 'surge', label: 'clients.surge', icon: Lightning, url: `/${path}/surge` },
+      { key: 'clash', label: 'clients.clash', icon: Box, url: `/${path}/clash` },
+      { key: 'shadowsocks', label: 'clients.shadowsocks', icon: Lock, url: `/${path}/shadowsocks` }
     ];
   }
 
@@ -90,6 +98,7 @@ export function useDashboardData({ t, toast, batchMode }) {
     } else {
       expandedPaths.value.push(path);
       ensureViewMode(path);
+      ensureGroupingMode(path);
       if (!nodesMap[path]) {
         await loadNodes(path);
       } else {
@@ -114,12 +123,52 @@ export function useDashboardData({ t, toast, batchMode }) {
     refreshSortable(path);
   }
 
+  function persistGroupingMode(path) {
+    localStorage.setItem(`nodeGroupingMode:${path}`, groupingModes[path]);
+    refreshSortable(path);
+  }
+
   function ensureViewMode(path) {
     if (viewModes[path]) return;
     const saved = localStorage.getItem(`nodeViewMode:${path}`);
     viewModes[path] = saved === 'table' || saved === 'card'
       ? saved
       : (window.innerWidth <= 768 ? 'card' : 'table');
+  }
+
+  function ensureGroupingMode(path) {
+    if (groupingModes[path]) return;
+    groupingModes[path] = localStorage.getItem(`nodeGroupingMode:${path}`) === 'flat'
+      ? 'flat'
+      : 'grouped';
+  }
+
+  function sourceLabel(node) {
+    return getNodeSourceLabel(node, t('nodes.source_ungrouped'));
+  }
+
+  function nodeGroups(path) {
+    return groupNodesBySource(nodesMap[path], t('nodes.source_ungrouped'));
+  }
+
+  function displayedNodes(path) {
+    if (groupingModes[path] === 'flat') return nodesMap[path] || [];
+    return nodeGroups(path).flatMap((group) => group.nodes);
+  }
+
+  function nodeCardItems(path) {
+    return buildNodeCardItems(
+      nodesMap[path],
+      groupingModes[path] !== 'flat',
+      t('nodes.source_ungrouped')
+    );
+  }
+
+  function tableSpanMethod(path, { column, rowIndex }) {
+    if (groupingModes[path] === 'flat' || column.columnKey !== 'source') return [1, 1];
+    const nodes = displayedNodes(path);
+    const rowspan = getSourceRowspan(nodes, rowIndex, t('nodes.source_ungrouped'));
+    return rowspan ? [rowspan, 1] : [0, 0];
   }
 
   function displayNodeType(node) {
@@ -149,6 +198,7 @@ export function useDashboardData({ t, toast, batchMode }) {
     nodesMap,
     loadingNodes,
     viewModes,
+    groupingModes,
     clientLinks,
     openClientPage,
     loadSubscriptions,
@@ -158,6 +208,11 @@ export function useDashboardData({ t, toast, batchMode }) {
     setCardGridRef,
     onRowClick,
     persistViewMode,
+    persistGroupingMode,
+    sourceLabel,
+    displayedNodes,
+    nodeCardItems,
+    tableSpanMethod,
     displayNodeType,
     refreshSortable,
     destroySortable

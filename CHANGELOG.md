@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.5] - 2026-07-16
+
+### Added
+- One-click import for multiple provider subscription URLs, with automatic format detection and source-based node grouping
+- AnyTLS support across node parsing and client subscription generation, including Surge output
+- Editable node names that are written back to the original node link (URL fragment, VMess `ps`, or Snell name)
+- Protocol regression coverage and Playwright browser smoke coverage for the main subscription workflow
+
+### Changed
+- Node lists can switch between grouped and flat views, while retaining source context in table and card layouts
+- Login credentials can be remembered only for trusted request origins
+- Refreshed the desktop and mobile UI with a clearer neutral palette, consistent control surfaces, and improved dark mode
+
+### Fixed
+- Preserve VLESS Reality and Vision parameters when converting subscriptions for compatible clients
+- Keep imported provider nodes associated with their source instead of leaving them ungrouped
+- Prevent narrow mobile layouts from overflowing subscription controls and node list tools
+
+---
+
 ## [1.0.4] - 2026-07-05
 
 ### Added
@@ -96,6 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 [1.0.4]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.3...tag/v1.0.4
+[1.0.5]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.4...tag/v1.0.5
 [1.0.3]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.2...tag/v1.0.3
 [1.0.2]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.1...tag/v1.0.2
 [1.0.1]: https://github.com/baixiaoshengofficial/SubscribeManager/compare/tag/v1.0.0...tag/v1.0.1

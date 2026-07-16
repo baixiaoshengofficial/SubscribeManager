@@ -142,7 +142,7 @@
     "invalid_orders": "Invalid orders data",
     "invalid_node": "Invalid node link",
     "duplicate_node": "This node already exists",
-    "placeholder": "Enter node content. Supported formats: ss://, vless:// (except Surge), vmess://, trojan://, socks://, hysteria2://, tuic://, snell (Surge only), Base64",
+    "placeholder": "Enter node content. Supported formats: ss://, vless:// (except Surge), vmess://, trojan://, anytls://, socks://, hysteria2://, tuic://, snell (Surge only), Base64",
     "list": "Node List",
     "loading": "Loading...",
     "none": "No nodes",
@@ -195,12 +195,6 @@
   },
   "import": {
     "title": "Import Nodes",
-    "source_type": "Source Type",
-    "type_universal": "Universal Link",
-    "type_v2ray": "V2Ray Link",
-    "type_surge": "Surge Link",
-    "type_clash": "Clash Link",
-    "type_ss": "Shadowsocks Link",
     "url": "Subscription URL",
     "url_hint": "Enter subscription link, system will automatically parse and import nodes",
     "button": "Import",
@@ -230,5 +224,3 @@
     "to_dark": "Switch to dark"
   }
 }
-
-

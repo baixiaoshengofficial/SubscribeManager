@@ -48,4 +48,17 @@ describe('buildMatrix', () => {
     expect(vlessRow.surge).toBe(false);
     expect(vlessRow.clash).toBe(true);
   });
+
+  it('lists AnyTLS for Mihomo, Surge and universal links', () => {
+    const matrix = buildMatrix();
+    const anytlsRow = matrix.find((r) => r.protocol === 'anytls://');
+
+    expect(anytlsRow).toMatchObject({
+      label: 'AnyTLS',
+      clash: true,
+      surge: true,
+      shadowsocks: false,
+      universal: true,
+    });
+  });
 });

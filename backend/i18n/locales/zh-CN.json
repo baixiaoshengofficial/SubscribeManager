@@ -142,7 +142,7 @@
     "invalid_orders": "无效的 orders 数据",
     "invalid_node": "无效的节点链接",
     "duplicate_node": "该节点已存在",
-    "placeholder": "请输入节点内容，支持以下格式：\n1. ss://... \n2. vless://...（除Surge） \n3. vmess://... \n4. trojan://... \n5. socks://... \n6. hysteria2://... \n7. tuic://... \n8. snell格式（仅Surge）\n9. Base64编码格式",
+    "placeholder": "请输入节点内容，支持以下格式：\n1. ss://... \n2. vless://...（除Surge） \n3. vmess://... \n4. trojan://... \n5. anytls://... \n6. socks://... \n7. hysteria2://... \n8. tuic://... \n9. snell格式（仅Surge）\n10. Base64编码格式",
     "list": "节点列表",
     "loading": "加载中...",
     "none": "暂无节点",
@@ -195,12 +195,6 @@
   },
   "import": {
     "title": "导入节点",
-    "source_type": "来源类型",
-    "type_universal": "通用链接",
-    "type_v2ray": "V2Ray 链接",
-    "type_surge": "Surge 链接",
-    "type_clash": "Clash 链接",
-    "type_ss": "Shadowsocks 链接",
     "url": "订阅链接",
     "url_hint": "输入订阅链接，系统将自动解析并导入节点",
     "button": "导入",
@@ -230,5 +224,3 @@
     "to_dark": "切换暗色"
   }
 }
-
-

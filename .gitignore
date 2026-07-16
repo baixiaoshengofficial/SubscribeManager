@@ -14,3 +14,5 @@
 /.codebuddy
 .DS_Store
 coverage
+
+/docs/community-promo.md

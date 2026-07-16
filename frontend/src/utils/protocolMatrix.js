@@ -1,10 +1,10 @@
 // 协议支持矩阵数据（与 backend/config/clientProfiles.js 一致）
 
 export const CLIENT_PROTOCOL_SUPPORT = {
-  clash: ['ss://', 'ssr://', 'vmess://', 'vless://', 'trojan://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://'],
-  surge: ['ss://', 'vmess://', 'trojan://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://', 'snell://'],
+  clash: ['ss://', 'ssr://', 'vmess://', 'vless://', 'trojan://', 'anytls://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://'],
+  surge: ['ss://', 'vmess://', 'trojan://', 'anytls://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://', 'snell://'],
   shadowsocks: ['ss://', 'ssr://'],
-  universal: ['ss://', 'ssr://', 'vmess://', 'vless://', 'trojan://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://', 'snell://']
+  universal: ['ss://', 'ssr://', 'vmess://', 'vless://', 'trojan://', 'anytls://', 'socks://', 'hysteria2://', 'hy2://', 'tuic://', 'snell://']
 };
 
 export const CLIENT_ORDER = ['clash', 'surge', 'shadowsocks', 'universal'];
@@ -15,6 +15,7 @@ export const PROTOCOL_LABELS = {
   'vmess://': 'VMess',
   'vless://': 'VLESS',
   'trojan://': 'Trojan',
+  'anytls://': 'AnyTLS',
   'socks://': 'SOCKS',
   'hysteria2://': 'Hysteria2',
   'hy2://': 'HY2',

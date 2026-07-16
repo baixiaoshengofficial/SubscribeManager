@@ -2,9 +2,11 @@ const nodeService = require('../services/nodeService');
 const { dbRun, withTransaction } = require('../utils/database/operations');
 const { 
   extractNodeName, 
+  setNodeName,
   tryDecodeNodeContent, 
   cleanNodeLink, 
   isValidNodeLink, 
+  getNodeType,
   NODE_TYPES, 
   safeBase64Decode 
 } = require('../utils');
@@ -16,6 +18,7 @@ const { NodeRepository } = require('../utils/database/operations');
 jest.mock('../utils/database/operations');
 jest.mock('../utils', () => ({
   extractNodeName: jest.fn((link) => link.split('#')[1] || 'Test Node'),
+  setNodeName: jest.fn((link, name) => `${link.split('#')[0]}#${encodeURIComponent(name)}`),
   tryDecodeNodeContent: jest.fn((link) => link),
   cleanNodeLink: jest.fn((link) => link),
   isValidNodeLink: jest.fn(() => true),
@@ -221,6 +224,30 @@ describe('NodeService', () => {
       expect(dbRun).toHaveBeenCalledWith(
         'UPDATE nodes SET original_link = ?, name = ?, type = ? WHERE id = ? AND subscription_id = ?',
         [decodedContent, 'DecodedNode', 'vmess', nodeId, 1]
+      );
+    });
+
+    it('should write a custom name back to the original link', async () => {
+      const subscriptionPath = 'test-subscription';
+      const nodeId = 123;
+      const content = 'vless://uuid@server:443#Old%20Name';
+      const customName = 'New Node';
+      const renamedLink = 'vless://uuid@server:443#New%20Node';
+
+      mockBaseService.getSubscriptionIdByPath.mockResolvedValue(1);
+      tryDecodeNodeContent.mockImplementation((link) => link);
+      cleanNodeLink.mockImplementation((link) => link);
+      getNodeType.mockReturnValue('ss');
+      setNodeName.mockReturnValue(renamedLink);
+      extractNodeName.mockReturnValue(customName);
+      dbRun.mockResolvedValue();
+
+      await nodeService.updateNode(subscriptionPath, nodeId, content, customName);
+
+      expect(setNodeName).toHaveBeenCalledWith(content, customName);
+      expect(dbRun).toHaveBeenCalledWith(
+        'UPDATE nodes SET original_link = ?, name = ?, type = ? WHERE id = ? AND subscription_id = ?',
+        [renamedLink, customName, 'ss', nodeId, 1]
       );
     });
 

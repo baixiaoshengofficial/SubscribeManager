@@ -36,7 +36,9 @@ class VMessProtocol extends BaseProtocol {
       path: config.path,
       host: config.host || config.add,
       sni: config.sni,
-      alpn: config.alpn
+      alpn: config.alpn,
+      fingerprint: config.fp,
+      allowInsecure: config.allowInsecure ?? config['allow-insecure']
     };
   }
 
@@ -116,22 +118,34 @@ class VMessProtocol extends BaseProtocol {
         uuid: node.uuid,
         alterId: node.alterId || 0,
         cipher: 'auto',
-        tls: node.tls
+        udp: true,
+        tls: node.tls,
+        'skip-cert-verify': node.allowInsecure === true
+          || node.allowInsecure === 1
+          || node.allowInsecure === '1'
+          || node.allowInsecure === 'true'
       };
 
       if (node.net === 'ws') {
         clashNode.network = 'ws';
+        clashNode['ws-opts'] = {};
+        if (node.path) clashNode['ws-opts'].path = node.path;
+        if (node.host) clashNode['ws-opts'].headers = { Host: node.host };
+      } else if (node.net === 'grpc') {
+        clashNode.network = 'grpc';
         if (node.path) {
-          clashNode['ws-opts'] = {
-            path: node.path,
-            headers: { Host: node.host }
-          };
+          clashNode['grpc-opts'] = { 'grpc-service-name': node.path };
         }
       }
 
       if (node.tls) {
-        clashNode['skip-cert-verify'] = true;
         if (node.sni) clashNode.servername = node.sni;
+        if (node.alpn) {
+          clashNode.alpn = Array.isArray(node.alpn)
+            ? node.alpn
+            : node.alpn.split(',').map(value => value.trim());
+        }
+        if (node.fingerprint) clashNode['client-fingerprint'] = node.fingerprint;
       }
 
       return clashNode;
@@ -181,6 +195,7 @@ class VMessProtocol extends BaseProtocol {
     if (fingerprint) vmessConfig.fp = fingerprint;
     if (clientFingerprint) vmessConfig.fp = clientFingerprint;
     if (alpn) vmessConfig.alpn = alpn;
+    if (skipCertVerify) vmessConfig.allowInsecure = 1;
 
     const jsonStr = JSON.stringify(vmessConfig);
     const base64Str = Buffer.from(jsonStr).toString('base64');

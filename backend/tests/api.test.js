@@ -10,10 +10,12 @@ const errorHandler = require('../middleware/errorHandler');
 jest.mock('../services/subscriptionService');
 jest.mock('../services/nodeService');
 jest.mock('../services/sessionService');
+jest.mock('../services/importService');
 
 const subscriptionService = require('../services/subscriptionService');
 const nodeService = require('../services/nodeService');
 const sessionService = require('../services/sessionService');
+const { importNodes } = require('../services/importService');
 
 // Create test app
 const app = express();
@@ -307,7 +309,7 @@ describe('API Routes', () => {
       it('should update node', async () => {
         const path = 'test-subscription';
         const nodeId = 123;
-        const updateData = { content: 'vmess://updated-server' };
+        const updateData = { content: 'vmess://updated-server', name: 'Renamed Node' };
 
         nodeService.updateNode.mockResolvedValue();
 
@@ -323,7 +325,8 @@ describe('API Routes', () => {
         expect(nodeService.updateNode).toHaveBeenCalledWith(
           path,
           String(nodeId),
-          updateData.content
+          updateData.content,
+          updateData.name
         );
       });
     });
@@ -424,6 +427,68 @@ describe('API Routes', () => {
 
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBeDefined();
+      });
+    });
+
+    describe('POST /api/subscriptions/:path/import-nodes', () => {
+      it('should import nodes from multiple provider subscription URLs', async () => {
+        const path = 'test-subscription';
+        const importUrls = [
+          'https://provider.example.com/sub-a',
+          'https://provider.example.com/sub-b'
+        ];
+
+        importNodes.mockResolvedValue({
+          importedCount: 3,
+          updatedCount: 1,
+          skippedCount: 1,
+          failedCount: 0,
+          sourceCount: 2,
+          failedSourceCount: 0,
+          totalAfterImport: 4
+        });
+
+        const response = await request(app)
+          .post(`/api/subscriptions/${path}/import-nodes`)
+          .send({ importUrls })
+          .expect(200);
+
+        expect(importNodes).toHaveBeenCalledWith(path, importUrls);
+        expect(response.body).toEqual({
+          success: true,
+          message: 'import.nodes_imported',
+          data: {
+            importedCount: 3,
+            updatedCount: 1,
+            skippedCount: 1,
+            failedCount: 0,
+            sourceCount: 2,
+            failedSourceCount: 0,
+            totalAfterImport: 4
+          }
+        });
+      });
+
+      it('should keep single URL import compatibility', async () => {
+        const path = 'test-subscription';
+        const importUrl = 'https://provider.example.com/sub';
+
+        importNodes.mockResolvedValue({
+          importedCount: 1,
+          updatedCount: 0,
+          skippedCount: 0,
+          failedCount: 0,
+          sourceCount: 1,
+          failedSourceCount: 0,
+          totalAfterImport: 1
+        });
+
+        await request(app)
+          .post(`/api/subscriptions/${path}/import-nodes`)
+          .send({ importUrl })
+          .expect(200);
+
+        expect(importNodes).toHaveBeenCalledWith(path, importUrl);
       });
     });
   });

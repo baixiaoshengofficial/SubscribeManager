@@ -13,6 +13,7 @@ describe('isValidNodeLink', () => {
     expect(isValidNodeLink('VMESS://abc')).toBe(true);
     expect(isValidNodeLink('vless://abc')).toBe(true);
     expect(isValidNodeLink('trojan://abc')).toBe(true);
+    expect(isValidNodeLink('anytls://abc')).toBe(true);
     expect(isValidNodeLink('hysteria2://abc')).toBe(true);
     expect(isValidNodeLink('tuic://abc')).toBe(true);
   });
@@ -32,6 +33,7 @@ describe('getNodeType', () => {
   it('returns lowercase type from prefix', () => {
     expect(getNodeType('ss://abc')).toBe('ss');
     expect(getNodeType('VLESS://abc')).toBe('vless');
+    expect(getNodeType('anytls://abc')).toBe('anytls');
     expect(getNodeType('hysteria2://abc')).toBe('hysteria2');
   });
 

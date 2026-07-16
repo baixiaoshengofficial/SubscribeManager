@@ -81,6 +81,10 @@ class VLESSProtocol extends BaseProtocol {
       if (params.has('flow')) {
         node.flow = params.get('flow');
       }
+
+      if (params.has('packetEncoding') || params.has('packet-encoding')) {
+        node.packetEncoding = params.get('packetEncoding') || params.get('packet-encoding');
+      }
       
       // Reality 特有参数
       if (params.has('pbk')) {
@@ -123,13 +127,11 @@ class VLESSProtocol extends BaseProtocol {
         type: 'vless',
         server: node.server,
         port: node.port,
-        uuid: node.uuid
+        uuid: node.uuid,
+        udp: true,
+        encryption: node.encryption && node.encryption !== 'none' ? node.encryption : '',
+        network: node.network || 'tcp'
       };
-
-      // 添加可选参数
-      if (node.encryption) {
-        clashNode.cipher = node.encryption;
-      }
 
       if (node.network) {
         clashNode.network = node.network;
@@ -171,6 +173,10 @@ class VLESSProtocol extends BaseProtocol {
         clashNode.flow = node.flow;
       }
 
+      if (node.packetEncoding) {
+        clashNode['packet-encoding'] = node.packetEncoding;
+      }
+
       // TLS 配置
       if (node.security === 'reality' || node.security === 'tls' || node.sni) {
         clashNode.tls = true;
@@ -195,13 +201,6 @@ class VLESSProtocol extends BaseProtocol {
         if (node.security === 'reality') {
           clashNode['reality-opts'] = {};
 
-          if (node.sni) {
-            clashNode['reality-opts'].sni = node.sni;
-          }
-          if (node.fingerprint) {
-            clashNode['reality-opts'].fingerprint = node.fingerprint;
-          }
-
           if (node.pbk) {
             clashNode['reality-opts']['public-key'] = node.pbk;
           }
@@ -225,11 +224,11 @@ class VLESSProtocol extends BaseProtocol {
    * @returns {string|null} 通用格式字符串
    */
   convertFromClash(proxy) {
-    const { name, server, port, uuid, cipher, encryption, network, tls, 'skip-cert-verify': skipCertVerify, servername, 'ws-opts': wsOpts, 'grpc-opts': grpcOpts, flow, fingerprint, 'client-fingerprint': clientFingerprint, 'reality-opts': realityOpts, udp, alpn, 'allowInsecure': allowInsecure } = proxy;
+    const { name, server, port, uuid, cipher, encryption, network, tls, 'skip-cert-verify': skipCertVerify, servername, 'ws-opts': wsOpts, 'grpc-opts': grpcOpts, flow, fingerprint, 'client-fingerprint': clientFingerprint, 'reality-opts': realityOpts, udp, alpn, 'packet-encoding': packetEncoding, 'allowInsecure': allowInsecure } = proxy;
 
     let params = new URLSearchParams();
     params.set('type', network || 'tcp');
-    params.set('encryption', encryption || cipher || 'none');
+    params.set('encryption', encryption !== undefined ? (encryption || 'none') : (cipher || 'none'));
 
     // 处理 security 参数
     if (tls) {
@@ -239,6 +238,8 @@ class VLESSProtocol extends BaseProtocol {
     // 处理网络路径
     if (wsOpts?.path) params.set('path', wsOpts.path);
     if (wsOpts?.headers?.Host) params.set('host', wsOpts.headers.Host);
+    if (wsOpts?.['max-early-data'] !== undefined) params.set('ed', wsOpts['max-early-data'].toString());
+    if (wsOpts?.['early-data-header-name']) params.set('early-data-header-name', wsOpts['early-data-header-name']);
     if (grpcOpts?.['grpc-service-name']) params.set('serviceName', grpcOpts['grpc-service-name']);
 
     // 处理 SNI
@@ -253,6 +254,7 @@ class VLESSProtocol extends BaseProtocol {
 
     // 处理 flow 参数
     if (flow) params.set('flow', flow);
+    if (packetEncoding) params.set('packetEncoding', packetEncoding);
 
     // 处理指纹参数
     if (clientFingerprint) params.set('fp', clientFingerprint);

@@ -11,7 +11,8 @@ class Hysteria2Protocol extends BaseProtocol {
       },
       transformers: {
         name: (name) => name ? decodeURIComponent(name) : '未命名节点',
-        port: (port) => parseInt(port)
+        port: (port) => parseInt(port),
+        skipCertVerify: (insecure) => insecure === 'true' || insecure === '1'
       }
     });
   }
@@ -33,7 +34,8 @@ class Hysteria2Protocol extends BaseProtocol {
       alpn: params.get('alpn'),
       obfs: params.get('obfs'),
       obfsPassword: params.get('obfs-password'),
-      cc: params.get('cc')
+      cc: params.get('cc'),
+      skipCertVerify: params.get('insecure') || params.get('allowInsecure')
     };
   }
 
@@ -82,7 +84,7 @@ class Hysteria2Protocol extends BaseProtocol {
         server: node.server,
         port: node.port,
         password: node.password,
-        'skip-cert-verify': true
+        'skip-cert-verify': Boolean(node.skipCertVerify)
       };
 
       if (node.up) clashNode.up = node.up;
@@ -95,8 +97,6 @@ class Hysteria2Protocol extends BaseProtocol {
           clashNode['obfs-password'] = safeDecodeURIComponent(node.obfsPassword);
         }
       }
-      if (node.cc) clashNode.cc = node.cc;
-
       return clashNode;
     }
 
@@ -110,10 +110,15 @@ class Hysteria2Protocol extends BaseProtocol {
    * @returns {string|null} 通用格式字符串
    */
   convertFromClash(proxy) {
-    const { name, server, port, password, sni, 'skip-cert-verify': skipCertVerify } = proxy;
+    const { name, server, port, password, up, down, sni, alpn, obfs, 'obfs-password': obfsPassword, 'skip-cert-verify': skipCertVerify } = proxy;
 
     let params = new URLSearchParams();
+    if (up) params.set('upmbps', up);
+    if (down) params.set('downmbps', down);
     if (sni) params.set('sni', sni);
+    if (alpn) params.set('alpn', Array.isArray(alpn) ? alpn.join(',') : alpn);
+    if (obfs) params.set('obfs', obfs);
+    if (obfsPassword) params.set('obfs-password', obfsPassword);
     if (skipCertVerify) params.set('insecure', '1');
 
     const link = `hysteria2://${password}@${server}:${port}?${params.toString()}`;

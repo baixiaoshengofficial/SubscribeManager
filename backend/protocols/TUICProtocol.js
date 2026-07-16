@@ -35,7 +35,7 @@ class TUICProtocol extends BaseProtocol {
       version: params.get('version') || params.get('v'),
       sni: params.get('sni') || url.hostname,
       alpn: params.get('alpn'),
-      allowInsecure: params.get('allow_insecure') || params.get('allowInsecure'),
+      skipCertVerify: params.get('allow_insecure') || params.get('allowInsecure'),
       udpRelayMode: params.get('udp_relay_mode') || params.get('udp-relay-mode'),
       congestionControl: params.get('congestion_control') || params.get('congestion-control') || params.get('cc'),
       disableSni: params.get('disable_sni'),
@@ -86,14 +86,13 @@ class TUICProtocol extends BaseProtocol {
         port: node.port,
         uuid: node.uuid,
         password: node.password,
-        'skip-cert-verify': true
+        'skip-cert-verify': Boolean(node.skipCertVerify)
       };
 
-      if (node.version) clashNode.version = parseInt(node.version);
       if (node.sni) clashNode.sni = safeDecodeURIComponent(node.sni);
       if (node.alpn) clashNode.alpn = node.alpn.split(',').map(s => s.trim());
       if (node.udpRelayMode) clashNode['udp-relay-mode'] = node.udpRelayMode;
-      if (node.congestionControl) clashNode['congestion-control'] = node.congestionControl;
+      if (node.congestionControl) clashNode['congestion-controller'] = node.congestionControl;
       if (node.disableSni) clashNode['disable-sni'] = true;
       if (node.reduceRtt) clashNode['reduce-rtt'] = true;
 
@@ -110,10 +109,15 @@ class TUICProtocol extends BaseProtocol {
    * @returns {string|null} 通用格式字符串
    */
   convertFromClash(proxy) {
-    const { name, server, port, uuid, password, sni, 'skip-cert-verify': skipCertVerify } = proxy;
+    const { name, server, port, uuid, password, sni, alpn, 'udp-relay-mode': udpRelayMode, 'congestion-controller': congestionController, 'disable-sni': disableSni, 'reduce-rtt': reduceRtt, 'skip-cert-verify': skipCertVerify } = proxy;
 
     let params = new URLSearchParams();
     if (sni) params.set('sni', sni);
+    if (alpn) params.set('alpn', Array.isArray(alpn) ? alpn.join(',') : alpn);
+    if (udpRelayMode) params.set('udp_relay_mode', udpRelayMode);
+    if (congestionController) params.set('congestion_control', congestionController);
+    if (disableSni) params.set('disable_sni', '1');
+    if (reduceRtt) params.set('reduce_rtt', '1');
     if (skipCertVerify) params.set('allowInsecure', '1');
 
     const link = `tuic://${uuid}:${password}@${server}:${port}?${params.toString()}`;

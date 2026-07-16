@@ -63,8 +63,8 @@ router.post('/subscriptions/:path/nodes', asyncHandler(async (req, res) => {
 // 更新节点
 router.put('/subscriptions/:path/nodes/:id', asyncHandler(async (req, res) => {
   const { path: subscriptionPath, id: nodeId } = req.params;
-  const { content } = req.body || {};
-  await nodeService.updateNode(subscriptionPath, nodeId, content);
+  const { content, name } = req.body || {};
+  await nodeService.updateNode(subscriptionPath, nodeId, content, name);
   res.json({ success: true, message: 'nodes.edited' });
 }));
 
@@ -94,17 +94,20 @@ router.post('/subscriptions/:path/nodes/reorder', asyncHandler(async (req, res) 
 // 从外部 URL 导入订阅节点
 router.post('/subscriptions/:path/import-nodes', asyncHandler(async (req, res) => {
   const { path: subscriptionPath } = req.params;
-  const { importUrl } = req.body || {};
+  const { importUrl, importUrls } = req.body || {};
 
-  const result = await importNodes(subscriptionPath, importUrl);
+  const result = await importNodes(subscriptionPath, importUrls || importUrl);
 
   res.json({
     success: true,
     message: 'import.nodes_imported',
     data: {
       importedCount: result.importedCount,
-      updatedCount: result.skippedCount,
+      updatedCount: result.updatedCount,
+      skippedCount: result.skippedCount,
       failedCount: result.failedCount,
+      sourceCount: result.sourceCount,
+      failedSourceCount: result.failedSourceCount,
       totalAfterImport: result.totalAfterImport
     }
   });

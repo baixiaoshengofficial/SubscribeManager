@@ -5,6 +5,7 @@ const NODE_TYPES = {
   VMESS: 'vmess://',
   VLESS: 'vless://',
   TROJAN: 'trojan://',
+  ANYTLS: 'anytls://',
   HYSTERIA2: 'hysteria2://',
   TUIC: 'tuic://',
   SOCKS5: 'socks5://',

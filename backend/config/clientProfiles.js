@@ -8,14 +8,14 @@ const CLIENT_PROTOCOL_SUPPORT = {
     // Clash 客户端 - 支持主流代理协议，不支持 Snell
   clash: [
     'ss://', 'ssr://', 'vmess://', 'vless://', 
-    'trojan://', 'socks://', 'hysteria2://', 
+    'trojan://', 'anytls://', 'socks://', 'hysteria2://',
     'hy2://', 'tuic://'
   ],
 
-  // Surge 客户端 - 支持 Snell，不支持 VLESS
+  // Surge 客户端 - 支持 Snell 与 AnyTLS，不支持 VLESS
   surge: [
     'ss://', 'vmess://', 'trojan://', 'socks://', 
-    'hysteria2://', 'hy2://', 'tuic://', 'snell://'
+    'hysteria2://', 'hy2://', 'tuic://', 'anytls://', 'snell://'
   ],
 
   // Shadowsocks 客户端 - 仅支持 SS/SSR 协议
@@ -26,7 +26,7 @@ const CLIENT_PROTOCOL_SUPPORT = {
   // 通用客户端 - 支持所有协议
   universal: [
     'ss://', 'ssr://', 'vmess://', 'vless://', 
-    'trojan://', 'socks://', 'hysteria2://', 
+    'trojan://', 'anytls://', 'socks://', 'hysteria2://',
     'hy2://', 'tuic://', 'snell://'
   ]
 };

@@ -1,5 +1,5 @@
 const { dbRun, withTransaction } = require('../utils/database/operations');
-const { extractNodeName, tryDecodeNodeContent, cleanNodeLink, isValidNodeLink, getNodeType, NODE_TYPES, safeBase64Decode } = require('../utils');
+const { extractNodeName, setNodeName, tryDecodeNodeContent, cleanNodeLink, isValidNodeLink, getNodeType, NODE_TYPES, safeBase64Decode } = require('../utils');
 const ApiError = require('../utils/ApiError');
 const BaseService = require('./baseService');
 const { NodeRepository } = require('../utils/database/operations');
@@ -16,6 +16,7 @@ function hasSupportedProtocol(link) {
     || lowerLink.startsWith('vmess://')
     || lowerLink.startsWith('vless://')
     || lowerLink.startsWith('trojan://')
+    || lowerLink.startsWith('anytls://')
     || lowerLink.startsWith('hysteria2://')
     || lowerLink.startsWith('tuic://')
     || lowerLink.startsWith('socks://')
@@ -23,7 +24,8 @@ function hasSupportedProtocol(link) {
 }
 
 async function getNodes(subscriptionPath) {
-  return await NodeRepository.findBySubscriptionPath(subscriptionPath);
+  const nodes = await NodeRepository.findBySubscriptionPath(subscriptionPath);
+  return nodes.map(({ source_url: _sourceUrl, ...node }) => node);
 }
 
 async function createNode(subscriptionPath, name, content, order) {
@@ -70,7 +72,7 @@ async function createNode(subscriptionPath, name, content, order) {
   });
 }
 
-async function updateNode(subscriptionPath, nodeId, content) {
+async function updateNode(subscriptionPath, nodeId, content, name) {
   if (!content) {
     throw new ApiError(400, 'nodes.content_required');
   }
@@ -81,6 +83,11 @@ async function updateNode(subscriptionPath, nodeId, content) {
 
   // 使用统一的解码逻辑
   originalLink = tryDecodeNodeContent(originalLink);
+
+  const customName = typeof name === 'string' ? name.trim() : '';
+  if (customName) {
+    originalLink = setNodeName(originalLink, customName);
+  }
 
   // 提取节点名称
   const nodeName = extractNodeName(originalLink);

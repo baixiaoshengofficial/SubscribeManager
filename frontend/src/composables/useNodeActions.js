@@ -7,7 +7,7 @@ export function useNodeActions({ t, toast, submitting, nodesMap, loadNodes, load
   const addNodeVisible = ref(false);
   const editNodeVisible = ref(false);
   const addNodeForm = reactive({ path: '', content: '' });
-  const editNodeForm = reactive({ path: '', id: null, content: '' });
+  const editNodeForm = reactive({ path: '', id: null, content: '', name: '', nameTouched: false });
 
   async function moveNode(path, node, direction) {
     const list = nodesMap[path] || [];
@@ -101,6 +101,8 @@ export function useNodeActions({ t, toast, submitting, nodesMap, loadNodes, load
     editNodeForm.path = path;
     editNodeForm.id = node.id;
     editNodeForm.content = node.original_link;
+    editNodeForm.name = node.name || '';
+    editNodeForm.nameTouched = false;
     editNodeVisible.value = true;
   }
 
@@ -111,7 +113,11 @@ export function useNodeActions({ t, toast, submitting, nodesMap, loadNodes, load
     }
     submitting.value = true;
     try {
-      await api.updateNode(editNodeForm.path, editNodeForm.id, { content: editNodeForm.content.trim() });
+      const data = { content: editNodeForm.content.trim() };
+      if (editNodeForm.nameTouched) {
+        data.name = editNodeForm.name;
+      }
+      await api.updateNode(editNodeForm.path, editNodeForm.id, data);
       toast('success', t('nodes.edited'));
       editNodeVisible.value = false;
       await loadNodes(editNodeForm.path);

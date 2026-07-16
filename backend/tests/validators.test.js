@@ -1,5 +1,6 @@
 const { 
   extractNodeName, 
+  setNodeName,
   isValidNodeLink, 
   parseNodeContent,
   NODE_TYPES 
@@ -66,6 +67,27 @@ describe('Node Validators', () => {
     });
   });
 
+  describe('setNodeName', () => {
+    it('writes a URL-encoded fragment for standard protocol links', () => {
+      const link = 'vless://uuid@example.com:443?security=reality#Old%20Name';
+      expect(setNodeName(link, '香港 节点')).toBe('vless://uuid@example.com:443?security=reality#%E9%A6%99%E6%B8%AF%20%E8%8A%82%E7%82%B9');
+    });
+
+    it('updates the ps field in a VMess link', () => {
+      const config = Buffer.from(JSON.stringify({ add: 'example.com', port: '443', ps: 'Old Name' })).toString('base64');
+      const updated = setNodeName(`vmess://${config}`, 'New Name');
+      const updatedConfig = JSON.parse(Buffer.from(updated.substring(8), 'base64').toString('utf8'));
+
+      expect(updatedConfig.ps).toBe('New Name');
+      expect(extractNodeName(updated)).toBe('New Name');
+    });
+
+    it('updates the name before the separator for Snell links', () => {
+      const link = 'Old Name=snell,example.com,443,aes-128-gcm,password';
+      expect(setNodeName(link, 'New Name')).toBe('New Name=snell,example.com,443,aes-128-gcm,password');
+    });
+  });
+
   describe('isValidNodeLink', () => {
     it('should validate vmess links', () => {
       expect(isValidNodeLink('vmess://eyJ2IjoiV...')).toBe(true);
@@ -85,6 +107,11 @@ describe('Node Validators', () => {
     it('should validate trojan links', () => {
       expect(isValidNodeLink('trojan://password@server:port')).toBe(true);
       expect(isValidNodeLink('TROJAN://password@server:port')).toBe(true);
+    });
+
+    it('should validate AnyTLS links', () => {
+      expect(isValidNodeLink('anytls://password@server:443')).toBe(true);
+      expect(isValidNodeLink('ANYTLS://password@server:443')).toBe(true);
     });
 
     it('should validate hysteria2 links', () => {
@@ -130,6 +157,7 @@ describe('Node Validators', () => {
       expect(NODE_TYPES).toHaveProperty('SS', 'ss://');
       expect(NODE_TYPES).toHaveProperty('VLESS', 'vless://');
       expect(NODE_TYPES).toHaveProperty('TROJAN', 'trojan://');
+      expect(NODE_TYPES).toHaveProperty('ANYTLS', 'anytls://');
       expect(NODE_TYPES).toHaveProperty('HYSTERIA2', 'hysteria2://');
       expect(NODE_TYPES).toHaveProperty('TUIC', 'tuic://');
       expect(NODE_TYPES).toHaveProperty('SNELL', 'snell,');

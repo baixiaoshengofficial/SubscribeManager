@@ -42,6 +42,8 @@ async function createTables() {
       name TEXT NOT NULL,
       original_link TEXT NOT NULL,
       type TEXT,
+      source_name TEXT,
+      source_url TEXT,
       node_order INTEGER DEFAULT 0,
       enabled BOOLEAN DEFAULT 1,
       FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE
@@ -84,6 +86,18 @@ async function createTables() {
 
   try {
     await db.exec(`ALTER TABLE subscriptions ADD COLUMN use_default_template BOOLEAN DEFAULT 0`);
+  } catch {
+    // Column already exists
+  }
+
+  try {
+    await db.exec(`ALTER TABLE nodes ADD COLUMN source_name TEXT`);
+  } catch {
+    // Column already exists
+  }
+
+  try {
+    await db.exec(`ALTER TABLE nodes ADD COLUMN source_url TEXT`);
   } catch {
     // Column already exists
   }

@@ -4,7 +4,7 @@ import Sortable from 'sortablejs';
 /**
  * 节点列表拖拽排序（表格 tbody / 卡片网格）
  */
-export function useNodeSortable({ getExpanded, getViewMode, getBatchMode, getTableRef, getCardGridRef, onReorder }) {
+export function useNodeSortable({ getExpanded, getViewMode, getGrouped, getBatchMode, getTableRef, getCardGridRef, onReorder }) {
   const instances = {};
 
   function destroy(path) {
@@ -22,7 +22,7 @@ export function useNodeSortable({ getExpanded, getViewMode, getBatchMode, getTab
     await nextTick();
     destroy(path);
 
-    if (!getExpanded(path) || getBatchMode(path)) return;
+    if (!getExpanded(path) || getGrouped(path) || getBatchMode(path)) return;
 
     const view = getViewMode(path);
     if (view === 'table') {

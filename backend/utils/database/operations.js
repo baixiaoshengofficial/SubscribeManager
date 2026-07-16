@@ -158,6 +158,8 @@ class NodeRepository {
         n.name,
         n.original_link,
         n.type,
+        n.source_name,
+        n.source_url,
         n.node_order,
         n.enabled
       FROM nodes n
@@ -179,6 +181,8 @@ class NodeRepository {
         n.name,
         n.original_link,
         n.type,
+        n.source_name,
+        n.source_url,
         n.node_order,
         n.enabled
       FROM nodes n
@@ -209,10 +213,24 @@ class NodeRepository {
    * @returns {Promise<Object>} 创建结果
    */
   static async create(data) {
-    const { subscriptionId, name, originalLink, nodeOrder = 0, type } = data;
+    const { subscriptionId, name, originalLink, nodeOrder = 0, type, sourceName = null, sourceUrl = null } = data;
     return await dbRun(
-      'INSERT INTO nodes (subscription_id, name, original_link, node_order, type) VALUES (?, ?, ?, ?, ?)',
-      [subscriptionId, name, originalLink, nodeOrder, type]
+      'INSERT INTO nodes (subscription_id, name, original_link, node_order, type, source_name, source_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [subscriptionId, name, originalLink, nodeOrder, type, sourceName, sourceUrl]
+    );
+  }
+
+  /**
+   * 为旧节点补全或规范化导入来源
+   * @param {number} id 节点ID
+   * @param {string} sourceName 来源名称
+   * @param {string} sourceUrl 不含查询参数的来源地址
+   * @returns {Promise<Object>} 更新结果
+   */
+  static async updateSource(id, sourceName, sourceUrl) {
+    return await dbRun(
+      'UPDATE nodes SET source_name = ?, source_url = ? WHERE id = ?',
+      [sourceName, sourceUrl, id]
     );
   }
 

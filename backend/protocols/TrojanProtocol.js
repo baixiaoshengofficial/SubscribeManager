@@ -7,7 +7,7 @@ class TrojanProtocol extends BaseProtocol {
       prefix: 'trojan://',
       defaults: {
         name: '未命名节点',
-        type: 'tcp'
+        network: 'tcp'
       },
       transformers: {
         name: (name) => name ? decodeURIComponent(name) : '未命名节点',
@@ -28,11 +28,13 @@ class TrojanProtocol extends BaseProtocol {
       server: url.hostname,
       port: url.port,
       password: url.username,
-      type: params.get('type'),
+      network: params.get('type') || 'tcp',
       path: params.get('path'),
       host: params.get('host'),
       sni: params.get('sni'),
-      alpn: params.get('alpn')
+      alpn: params.get('alpn'),
+      fingerprint: params.get('fp'),
+      allowInsecure: params.get('allowInsecure') || params.get('allow_insecure')
     };
   }
 
@@ -66,7 +68,7 @@ class TrojanProtocol extends BaseProtocol {
         parts.push(`alpn=${node.alpn.replace(/,/g, ':')}`);
       }
 
-      if (node.type === 'ws') {
+      if (node.network === 'ws') {
         parts.push('ws=true');
         if (node.path) {
           parts.push(`ws-path=${safeDecodeURIComponent(node.path)}`);
@@ -84,10 +86,11 @@ class TrojanProtocol extends BaseProtocol {
         server: node.server,
         port: node.port,
         password: node.password,
-        'skip-cert-verify': true
+        udp: true,
+        'skip-cert-verify': node.allowInsecure === '1' || node.allowInsecure === 'true'
       };
 
-      if (node.type === 'ws') {
+      if (node.network === 'ws') {
         clashNode.network = 'ws';
         if (node.path || node.host) {
           clashNode['ws-opts'] = {};
@@ -99,6 +102,8 @@ class TrojanProtocol extends BaseProtocol {
       }
 
       if (node.sni) clashNode.sni = safeDecodeURIComponent(node.sni);
+      if (node.alpn) clashNode.alpn = node.alpn.split(',').map(value => value.trim());
+      if (node.fingerprint) clashNode['client-fingerprint'] = node.fingerprint;
       return clashNode;
     }
 

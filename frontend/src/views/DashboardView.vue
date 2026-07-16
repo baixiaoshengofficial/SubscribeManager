@@ -67,9 +67,6 @@
               <el-button text size="small" @click="copyLink(c.url)" :title="t('common.copy')">
                 <el-icon><CopyDocument /></el-icon>
               </el-button>
-              <el-button text size="small" @click="openImport(sub.path, c.importType)" :title="t('common.import')">
-                <el-icon><Upload /></el-icon>
-              </el-button>
             </div>
           </div>
         </div>
@@ -79,6 +76,10 @@
           <el-button type="success" plain :data-testid="`add-node-${sub.path}`" @click="openAddNode(sub.path)">
             <el-icon><Plus /></el-icon>
             <span>{{ t('actions.add_node') }}</span>
+          </el-button>
+          <el-button plain :data-testid="`import-nodes-${sub.path}`" @click="openImport(sub.path)">
+            <el-icon><Upload /></el-icon>
+            <span>{{ t('import.quick_button') }}</span>
           </el-button>
           <el-button
             :type="expandedPaths.includes(sub.path) ? 'primary' : 'default'"
@@ -99,11 +100,16 @@
                 <span>{{ t('actions.node_list') }}</span>
               </div>
               <div class="node-list-tools">
+                <el-radio-group v-model="groupingModes[sub.path]" size="small" @change="persistGroupingMode(sub.path)">
+                  <el-radio-button value="grouped" :data-testid="`grouped-nodes-${sub.path}`">{{ t('nodes.grouped') }}</el-radio-button>
+                  <el-radio-button value="flat" :data-testid="`flat-nodes-${sub.path}`">{{ t('nodes.flat') }}</el-radio-button>
+                </el-radio-group>
+
                 <el-radio-group v-model="viewModes[sub.path]" size="small" @change="persistViewMode(sub.path)">
-                  <el-radio-button value="table" :title="t('nodes.view_table')">
+                  <el-radio-button value="table" :data-testid="`table-nodes-${sub.path}`" :title="t('nodes.view_table')">
                     <el-icon><List /></el-icon>
                   </el-radio-button>
-                  <el-radio-button value="card" :title="t('nodes.view_card')">
+                  <el-radio-button value="card" :data-testid="`card-nodes-${sub.path}`" :title="t('nodes.view_card')">
                     <el-icon><Grid /></el-icon>
                   </el-radio-button>
                 </el-radio-group>
@@ -141,14 +147,15 @@
               <!-- 表格视图 -->
               <div v-else-if="viewModes[sub.path] === 'table'" class="node-table-wrap">
               <el-table
-                :data="nodesMap[sub.path]"
+                :data="displayedNodes(sub.path)"
                 row-key="id"
                 :ref="(el) => setTableRef(sub.path, el)"
+                :span-method="(options) => tableSpanMethod(sub.path, options)"
                 @row-click="onRowClick"
                 border
                 stripe
               >
-                <el-table-column v-if="!batchMode[sub.path]" width="44" align="center" class-name="drag-col">
+                <el-table-column v-if="!batchMode[sub.path] && groupingModes[sub.path] === 'flat'" width="44" align="center" class-name="drag-col">
                   <template #default>
                     <span class="drag-handle" :title="t('nodes.drag_sort')">
                       <el-icon><Rank /></el-icon>
@@ -168,6 +175,13 @@
                       @change="onRowSelect(sub.path, row.id, $event)"
                       @click.stop
                     />
+                  </template>
+                </el-table-column>
+                <el-table-column column-key="source" :label="t('nodes.source')" width="180" show-overflow-tooltip>
+                  <template #default="{ row }">
+                    <el-tag size="small" effect="plain" class="node-source-tag">
+                      {{ sourceLabel(row) }}
+                    </el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('nodes.name')" class-name="node-name-col" show-overflow-tooltip>
@@ -191,7 +205,7 @@
                 >
                   <template #default="{ row }">
                     <div class="node-row-actions">
-                      <el-button text size="small" @click.stop="openEditNode(sub.path, row)" :title="t('actions.edit')">
+                      <el-button text size="small" :data-testid="`edit-node-${row.id}`" @click.stop="openEditNode(sub.path, row)" :title="t('actions.edit')">
                         <el-icon><Edit /></el-icon>
                       </el-button>
                       <el-button text size="small" @click.stop="copyText(row.original_link)" :title="t('common.copy')">
@@ -211,48 +225,56 @@
 
               <!-- 卡片视图 -->
               <div v-else class="node-card-grid" :ref="(el) => setCardGridRef(sub.path, el)">
-                <div
-                  v-for="node in nodesMap[sub.path]"
-                  :key="node.id"
+                <template v-for="item in nodeCardItems(sub.path)" :key="item.kind === 'group' ? `group:${item.source}` : item.node.id">
+                  <div v-if="item.kind === 'group'" class="node-group-heading" data-testid="node-group-heading">
+                    <span>{{ item.source }}</span>
+                    <span class="node-group-count">{{ item.count }} {{ t('nodes.count_label') }}</span>
+                  </div>
+                  <div
+                  v-else
                   class="node-card"
-                  :class="{ 'node-card-disabled': !node.enabled }"
+                  :class="{ 'node-card-disabled': !item.node.enabled }"
                 >
                   <div class="node-card-header">
                     <div class="node-card-title">
-                      <span v-if="!batchMode[sub.path]" class="node-card-drag drag-handle" :title="t('nodes.drag_sort')">
+                      <span v-if="!batchMode[sub.path] && groupingModes[sub.path] === 'flat'" class="node-card-drag drag-handle" :title="t('nodes.drag_sort')">
                         <el-icon><Rank /></el-icon>
                       </span>
                       <el-checkbox
                         v-if="batchMode[sub.path]"
-                        :model-value="selectedMap[sub.path]?.includes(node.id)"
-                        @change="onRowSelect(sub.path, node.id, $event)"
+                        :model-value="selectedMap[sub.path]?.includes(item.node.id)"
+                        @change="onRowSelect(sub.path, item.node.id, $event)"
                       />
-                      <el-tag size="small" effect="plain" class="node-type-tag" :type="node.enabled ? 'success' : 'info'">{{ displayNodeType(node) }}</el-tag>
-                      <span :class="{ disabled: !node.enabled }">{{ node.name }}</span>
+                      <el-tag v-if="groupingModes[sub.path] === 'flat'" size="small" effect="plain" class="node-source-tag">
+                        {{ sourceLabel(item.node) }}
+                      </el-tag>
+                      <el-tag size="small" effect="plain" class="node-type-tag" :type="item.node.enabled ? 'success' : 'info'">{{ displayNodeType(item.node) }}</el-tag>
+                      <span :class="{ disabled: !item.node.enabled }">{{ item.node.name }}</span>
                     </div>
                   </div>
-                  <div class="node-card-link" :title="node.original_link" :class="{ disabled: !node.enabled }">{{ node.original_link }}</div>
+                  <div class="node-card-link" :title="item.node.original_link" :class="{ disabled: !item.node.enabled }">{{ item.node.original_link }}</div>
                   <div class="node-card-actions">
-                    <el-button text size="small" @click="moveNode(sub.path, node, -1)" :title="t('nodes.move_up')">
+                    <el-button v-if="groupingModes[sub.path] === 'flat'" text size="small" @click="moveNode(sub.path, item.node, -1)" :title="t('nodes.move_up')">
                       <el-icon><Top /></el-icon>
                     </el-button>
-                    <el-button text size="small" @click="moveNode(sub.path, node, 1)" :title="t('nodes.move_down')">
+                    <el-button v-if="groupingModes[sub.path] === 'flat'" text size="small" @click="moveNode(sub.path, item.node, 1)" :title="t('nodes.move_down')">
                       <el-icon><Bottom /></el-icon>
                     </el-button>
-                    <el-button text size="small" @click="openEditNode(sub.path, node)">
+                    <el-button text size="small" :data-testid="`edit-node-${item.node.id}`" @click="openEditNode(sub.path, item.node)">
                       <el-icon><Edit /></el-icon>
                     </el-button>
-                    <el-button text size="small" @click="copyText(node.original_link)">
+                    <el-button text size="small" @click="copyText(item.node.original_link)">
                       <el-icon><CopyDocument /></el-icon>
                     </el-button>
-                    <el-button text size="small" @click="toggleNode(sub.path, node)">
-                      <el-icon><Open v-if="!node.enabled" /><TurnOff v-else /></el-icon>
+                    <el-button text size="small" @click="toggleNode(sub.path, item.node)">
+                      <el-icon><Open v-if="!item.node.enabled" /><TurnOff v-else /></el-icon>
                     </el-button>
-                    <el-button text size="small" type="danger" @click="deleteNode(sub.path, node)">
+                    <el-button text size="small" type="danger" @click="deleteNode(sub.path, item.node)">
                       <el-icon><Delete /></el-icon>
                     </el-button>
                   </div>
                 </div>
+                </template>
               </div>
             </div>
           </div>
@@ -322,6 +344,14 @@
     <!-- 编辑节点 -->
     <el-dialog v-model="editNodeVisible" :title="t('modal.edit_node_title')" width="640px">
       <el-form label-position="top">
+        <el-form-item :label="t('nodes.name')">
+          <el-input
+            v-model="editNodeForm.name"
+            clearable
+            data-testid="edit-node-name"
+            @input="editNodeForm.nameTouched = true"
+          />
+        </el-form-item>
         <el-form-item :label="t('nodes.content_label')">
           <el-input
             v-model="editNodeForm.content"
@@ -333,7 +363,7 @@
       </el-form>
       <template #footer>
         <el-button @click="editNodeVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="submitting" @click="updateNode">{{ t('common.save') }}</el-button>
+        <el-button type="primary" data-testid="update-node" :loading="submitting" @click="updateNode">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -388,21 +418,19 @@
     <!-- 导入节点 -->
     <el-dialog v-model="importVisible" :title="t('import.title')" width="520px">
       <el-form label-position="top">
-        <el-form-item :label="t('import.source_type')">
-          <el-select v-model="importForm.importType" style="width: 100%">
-            <el-option :label="t('import.type_universal')" value="universal" />
-            <el-option :label="t('import.type_v2ray')" value="v2ray" />
-            <el-option :label="t('import.type_surge')" value="surge" />
-            <el-option :label="t('import.type_clash')" value="clash" />
-            <el-option :label="t('import.type_ss')" value="ss" />
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="t('import.url')">
-          <el-input v-model="importForm.importUrl" placeholder="https://example.com/subscribe" />
+        <el-form-item :label="t('import.urls')">
+          <el-input
+            v-model="importForm.importUrl"
+            data-testid="import-urls"
+            type="textarea"
+            :rows="6"
+            placeholder="https://example.com/subscribe"
+          />
           <div class="form-help">{{ t('import.url_hint') }}</div>
         </el-form-item>
         <el-alert
           v-if="importResult"
+          data-testid="import-result"
           :title="importResultTitle"
           type="success"
           :closable="false"
@@ -412,8 +440,8 @@
         </el-alert>
       </el-form>
       <template #footer>
-        <el-button @click="importVisible = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="importing" @click="importNodes">{{ t('import.button') }}</el-button>
+        <el-button data-testid="import-close" @click="importVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" data-testid="import-submit" :loading="importing" @click="importNodes">{{ t('import.button') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -466,6 +494,7 @@ const {
   nodesMap,
   loadingNodes,
   viewModes,
+  groupingModes,
   clientLinks,
   openClientPage,
   loadSubscriptions,
@@ -475,6 +504,11 @@ const {
   setCardGridRef,
   onRowClick,
   persistViewMode,
+  persistGroupingMode,
+  sourceLabel,
+  displayedNodes,
+  nodeCardItems,
+  tableSpanMethod,
   displayNodeType,
   refreshSortable,
   destroySortable

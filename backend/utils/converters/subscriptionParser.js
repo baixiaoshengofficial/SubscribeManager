@@ -15,6 +15,7 @@ const SSProtocol = require('../../protocols/SSProtocol');
 const Hysteria2Protocol = require('../../protocols/Hysteria2Protocol');
 const TUICProtocol = require('../../protocols/TUICProtocol');
 const SOCKSProtocol = require('../../protocols/SOCKSProtocol');
+const AnyTLSProtocol = require('../../protocols/AnyTLSProtocol');
 const logger = require('../logger');
 
 /**
@@ -36,7 +37,7 @@ function detectSubscriptionFormat(content) {
   }
 
   // 检测 Surge 逗号格式 (Type, Server, Port...)
-  const surgePattern = /^\s*[\w\s\-]+\s*=\s*(ss|vmess|trojan|vless|hysteria2|hy2|tuic)\s*,/im;
+  const surgePattern = /^\s*[\w\s\-]+\s*=\s*(ss|vmess|trojan|vless|hysteria2|hy2|tuic|anytls)\s*,/im;
   if (surgePattern.test(trimmed)) {
     return 'surge';
   }
@@ -65,6 +66,7 @@ function detectSubscriptionFormat(content) {
     /vless:\/\//i,
     /vmess:\/\//i,
     /trojan:\/\//i,
+    /anytls:\/\//i,
     /hysteria2?:\/\//i,
     /tuic:\/\//i,
     /socks:\/\//i
@@ -235,7 +237,9 @@ function convertClashNodeToUniversal(proxy) {
     'hysteria2': Hysteria2Protocol,
     'hy2': Hysteria2Protocol,
     'tuic': TUICProtocol,
-    'socks': SOCKSProtocol
+    'socks': SOCKSProtocol,
+    'socks5': SOCKSProtocol,
+    'anytls': AnyTLSProtocol
   };
 
   const ProtocolClass = protocolMap[type.toLowerCase()];
@@ -334,6 +338,7 @@ function convertSurgeNodeToUniversal(line) {
     'hysteria2': Hysteria2Protocol,
     'hy2': Hysteria2Protocol,
     'vless': VLESSProtocol,
+    'anytls': AnyTLSProtocol,
     'snell': null // Snell 是 Surge 独有格式，跳过
   };
 

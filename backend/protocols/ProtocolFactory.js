@@ -6,6 +6,7 @@ const SOCKSProtocol = require('./SOCKSProtocol');
 const Hysteria2Protocol = require('./Hysteria2Protocol');
 const TUICProtocol = require('./TUICProtocol');
 const VLESSProtocol = require('./VLESSProtocol');
+const AnyTLSProtocol = require('./AnyTLSProtocol');
 
 // 使用统一常量
 const { NODE_TYPES } = require('../utils/constants');
@@ -20,7 +21,8 @@ class ProtocolFactory {
       new SOCKSProtocol(),
       new Hysteria2Protocol(),
       new TUICProtocol(),
-      new VLESSProtocol()
+      new VLESSProtocol(),
+      new AnyTLSProtocol()
     ];
     
     // 建立前缀到协议的映射
