@@ -8,7 +8,7 @@
 
 ### Star 趋势
 
-[![Star 趋势图](https://raw.githubusercontent.com/baixiaoshengofficial/SubscribeManager/star-history/star-history.svg)](https://github.com/baixiaoshengofficial/SubscribeManager/tree/star-history)
+[![Star 趋势图](https://api.star-history.com/chart?repos=baixiaoshengofficial/SubscribeManager&type=date&legend=top-left&sealed_token=2peV2a45tGf7yz035wsoXznGaNFhrO4lazzvWAYyfADzjkutP4VkssZh6oymwbd77Z1aZiVBni_T73HL4y_GfL9mPbdFh2uuYGNAyN4CpOGBIyStGuQipJdGcrFEmCWhQHMGrBwzcR5HKRK7KJJibCeVbhuJwKXshj4dfV7oacAl0zE2q8gYRM3n_WLF)](https://www.star-history.com/?repos=baixiaoshengofficial%2FSubscribeManager&type=date&legend=top-left)
 
 ### 更新日志
 
