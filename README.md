@@ -6,9 +6,9 @@
 
 [SubscribeManager](https://github.com/baixiaoshengofficial/SubscribeManager) Give it a Star
 
-### Star History
+### Stars
 
-[![Star History Chart](https://api.star-history.com/svg?repos=baixiaoshengofficial/SubscribeManager&type=Date)](https://star-history.com/#baixiaoshengofficial/SubscribeManager&Date)
+[![GitHub Repo stars](https://img.shields.io/github/stars/baixiaoshengofficial/SubscribeManager?style=flat&logo=github)](https://github.com/baixiaoshengofficial/SubscribeManager/stargazers)
 
 ### Changelog
 
@@ -279,4 +279,3 @@ When Subconvert URL is configured:
 ## REF
 
 [ProxyCli](https://github.com/baixiaoshengofficial/ProxyCli)
-

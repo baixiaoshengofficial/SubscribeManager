@@ -6,9 +6,9 @@
 
 [SubscribeManager](https://github.com/baixiaoshengofficial/SubscribeManager)动动你的小手给个 Star
 
-### Star 趋势
+### Star 数
 
-[Star History Chart](https://star-history.com/#baixiaoshengofficial/SubscribeManager&Date)
+[![GitHub Star 数](https://img.shields.io/github/stars/baixiaoshengofficial/SubscribeManager?style=flat&logo=github)](https://github.com/baixiaoshengofficial/SubscribeManager/stargazers)
 
 ### 更新日志
 
