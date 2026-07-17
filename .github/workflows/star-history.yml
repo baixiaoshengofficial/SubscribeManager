@@ -25,7 +25,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           STAR_HISTORY_DATA_PATH: ${{ runner.temp }}/star-history.json
           STAR_HISTORY_SVG_PATH: ${{ runner.temp }}/star-history.svg
-        run: node scripts/update-star-history.mjs
+        run: |
+          git fetch origin star-history || true
+          if git show-ref --verify --quiet refs/remotes/origin/star-history; then
+            git show origin/star-history:star-history.json > "$STAR_HISTORY_DATA_PATH" || true
+          fi
+          node scripts/update-star-history.mjs
 
       - name: Publish star history branch
         env:
