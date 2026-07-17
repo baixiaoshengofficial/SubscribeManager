@@ -132,7 +132,6 @@ try {
 }
 
 if (!points?.length) {
-  source = 'snapshots';
   const snapshots = Array.isArray(existing.snapshots) ? existing.snapshots : [];
   const lastSnapshot = snapshots.at(-1);
   if (lastSnapshot?.date === today) {
@@ -141,7 +140,21 @@ if (!points?.length) {
     snapshots.push({ date: today, stars: currentStars });
   }
   existing.snapshots = snapshots;
-  points = snapshots;
+
+  const existingPoints = Array.isArray(existing.points) ? existing.points : [];
+  if (existing.source?.startsWith('stargazers') && existingPoints.length > 1) {
+    const lastPoint = existingPoints.at(-1);
+    if (lastPoint.date === today) {
+      lastPoint.stars = currentStars;
+    } else if (lastPoint.stars !== currentStars) {
+      existingPoints.push({ date: today, stars: currentStars });
+    }
+    points = existingPoints;
+    source = 'stargazers + snapshots';
+  } else {
+    points = snapshots;
+    source = 'snapshots';
+  }
 }
 
 const data = {
