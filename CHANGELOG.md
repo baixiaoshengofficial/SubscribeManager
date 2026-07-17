@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.5] - 2026-07-16
+## [1.0.5] - 2026-07-17
 
 ### Added
 - One-click import for multiple provider subscription URLs, with automatic format detection and source-based node grouping
