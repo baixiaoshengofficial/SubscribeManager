@@ -6,9 +6,9 @@
 
 [SubscribeManager](https://github.com/baixiaoshengofficial/SubscribeManager) Give it a Star
 
-### Stars
+### Star History
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/baixiaoshengofficial/SubscribeManager?style=flat&logo=github)](https://github.com/baixiaoshengofficial/SubscribeManager/stargazers)
+[![Star History Chart](https://raw.githubusercontent.com/baixiaoshengofficial/SubscribeManager/star-history/star-history.svg)](https://github.com/baixiaoshengofficial/SubscribeManager/tree/star-history)
 
 ### Changelog
 

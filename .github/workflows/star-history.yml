@@ -1,0 +1,53 @@
+name: Update star history
+
+on:
+  schedule:
+    - cron: '17 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: star-history
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate star history artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          STAR_HISTORY_DATA_PATH: ${{ runner.temp }}/star-history.json
+          STAR_HISTORY_SVG_PATH: ${{ runner.temp }}/star-history.svg
+        run: node scripts/update-star-history.mjs
+
+      - name: Publish star history branch
+        env:
+          STAR_HISTORY_DATA_PATH: ${{ runner.temp }}/star-history.json
+          STAR_HISTORY_SVG_PATH: ${{ runner.temp }}/star-history.svg
+        run: |
+          git fetch origin star-history || true
+          if git show-ref --verify --quiet refs/remotes/origin/star-history; then
+            git switch --force-create star-history origin/star-history
+          else
+            git switch --orphan star-history
+            git rm -rf . || true
+          fi
+
+          cp "$STAR_HISTORY_DATA_PATH" star-history.json
+          cp "$STAR_HISTORY_SVG_PATH" star-history.svg
+          git add star-history.json star-history.svg
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "chore: update star history"
+          git push origin HEAD:star-history
