@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserve VLESS Reality and Vision parameters when converting subscriptions for compatible clients
 - Keep imported provider nodes associated with their source instead of leaving them ungrouped
 - Prevent narrow mobile layouts from overflowing subscription controls and node list tools
+- Restore the live GitHub Star History chart with authenticated real-time data
 
 ---
 
