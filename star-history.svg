@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" role="img" aria-labelledby="title desc">
   <title id="title">baixiaoshengofficial/SubscribeManager star history</title>
-  <desc id="desc">GitHub stargazer history. Current stars: 59.</desc>
+  <desc id="desc">Daily snapshots. Current stars: 59.</desc>
   <style>
     .surface { fill: #ffffff; } .grid { stroke: #d8e2de; stroke-width: 1; } .axis { fill: #73817b; font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     .title { fill: #17201d; font: 600 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; } .meta { fill: #73817b; font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -10,10 +10,10 @@
   <rect class="surface" width="760" height="260" rx="10"/>
   <text class="title" x="54" y="22">Star history</text>
   <text class="meta" x="726" y="22" text-anchor="end">59 stars</text>
-  <path d="M 54 36 H 726" class="grid"/><text x="44" y="40" class="axis" text-anchor="end">67</text><path d="M 54 94.66666666666666 H 726" class="grid"/><text x="44" y="98.66666666666666" class="axis" text-anchor="end">45</text><path d="M 54 153.33333333333331 H 726" class="grid"/><text x="44" y="157.33333333333331" class="axis" text-anchor="end">22</text><path d="M 54 212 H 726" class="grid"/><text x="44" y="216" class="axis" text-anchor="end">0</text>
-  <polygon class="area" points="54,212 54.0,193.6 76.4,185.7 98.8,177.9 121.2,175.2 143.6,172.6 166.0,167.3 188.4,159.5 210.8,156.8 233.2,154.2 255.6,149.0 278.0,146.3 300.4,143.7 322.8,141.1 345.2,138.4 367.6,135.8 390.0,133.2 412.4,130.6 434.8,114.8 457.2,109.6 479.6,106.9 502.0,104.3 524.4,101.7 546.8,99.0 569.2,96.4 591.6,93.8 614.0,91.2 636.4,88.5 658.8,85.9 681.2,83.3 703.6,75.4 726.0,57.0 726,212"/>
-  <polyline class="line" points="54.0,193.6 76.4,185.7 98.8,177.9 121.2,175.2 143.6,172.6 166.0,167.3 188.4,159.5 210.8,156.8 233.2,154.2 255.6,149.0 278.0,146.3 300.4,143.7 322.8,141.1 345.2,138.4 367.6,135.8 390.0,133.2 412.4,130.6 434.8,114.8 457.2,109.6 479.6,106.9 502.0,104.3 524.4,101.7 546.8,99.0 569.2,96.4 591.6,93.8 614.0,91.2 636.4,88.5 658.8,85.9 681.2,83.3 703.6,75.4 726.0,57.0"/>
-  <circle class="point" cx="726.0" cy="57.0" r="4.5"/>
-  <text class="axis" x="54" y="242">2025-09-14</text>
-  <text class="axis" x="726" y="242" text-anchor="end">2026-07-10</text>
+  <path d="M 54 36 H 726" class="grid"/><text x="44" y="40" class="axis" text-anchor="end">60</text><path d="M 54 94.66666666666666 H 726" class="grid"/><text x="44" y="98.66666666666666" class="axis" text-anchor="end">59</text><path d="M 54 153.33333333333331 H 726" class="grid"/><text x="44" y="157.33333333333331" class="axis" text-anchor="end">59</text><path d="M 54 212 H 726" class="grid"/><text x="44" y="216" class="axis" text-anchor="end">58</text>
+  <polygon class="area" points="54,212 390.0,124.0 726,212"/>
+  <polyline class="line" points="390.0,124.0"/>
+  <circle class="point" cx="390.0" cy="124.0" r="4.5"/>
+  <text class="axis" x="54" y="242">2026-07-17</text>
+  <text class="axis" x="726" y="242" text-anchor="end">2026-07-17</text>
 </svg>
