@@ -158,7 +158,7 @@ function formatNodesForSubconvertUrl(nodeContent) {
 
 /**
  * 解析传给 Subconverter 的订阅源
- * 有节点内容时始终用 | 拼接内联传递（Subconverter 拉取通用 /path URL 常失败）
+ * 优先用 | 拼接节点内联传递；调用方在请求过长或返回 414 时改用订阅 URL。
  */
 function resolveSubconvertDirectUrl(subscriptionUrl, nodeContent) {
   if (nodeContent?.trim()) {

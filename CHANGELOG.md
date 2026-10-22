@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.6] - 2026-10-22
+
+### Fixed
+- Prevent HTTP 414 errors for large Subconverter requests by fetching nodes through the Base64 subscription URL
+- Retry shorter inline requests through the subscription URL when a proxy returns HTTP 414
+- Report failed Clash conversions instead of silently replacing custom region groups and rules with the built-in template
+
+---
+
 ## [1.0.5] - 2026-07-17
 
 ### Added

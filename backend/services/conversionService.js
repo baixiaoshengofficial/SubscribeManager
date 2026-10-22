@@ -9,6 +9,9 @@ const logger = require('../utils/logger');
 const subscriptionService = require('./subscriptionService');
 const ApiError = require('../utils/ApiError');
 
+// 为反向代理的请求行限制预留空间，长度包含编码后的全部参数。
+const MAX_SUBCONVERT_URL_BYTES = 4096;
+
 class ConversionService {
   /**
    * 转换订阅内容到指定格式
@@ -66,13 +69,14 @@ class ConversionService {
     }
 
     const publicBase = getPublicBaseUrl(requestBaseUrl);
-    const subscriptionSourceUrl = `${publicBase}/${subscriptionPath.trim()}`;
+    // Base64 通用订阅保留原始节点，且不会再次触发 Subconverter 转换。
+    const subscriptionSourceUrl = `${publicBase}/${subscriptionPath.trim()}/v2ray`;
     const nodeContent = filterSnellNodes(subscriptionData.nodes);
     const directUrl = resolveSubconvertDirectUrl(subscriptionSourceUrl, nodeContent);
 
     const config = await this._callSubconvertApi(
       subconvertUrl.trim(),
-      null,
+      subscriptionSourceUrl,
       'clash',
       normalizeTemplateUrl(templateUrl),
       directUrl
@@ -98,8 +102,8 @@ class ConversionService {
           const pathParts = urlObj.pathname.split('/').filter(Boolean);
           if (pathParts.length >= 1) {
             const subscriptionPath = pathParts[0];
-            const publicBase = getPublicBaseUrl(realBaseUrl);
-            subscriptionSourceUrl = `${publicBase}/${subscriptionPath}`;
+            const publicBase = getPublicBaseUrl(realBaseUrl || urlObj.origin);
+            subscriptionSourceUrl = `${publicBase}/${subscriptionPath}/v2ray`;
           }
         } catch (e) {
           logger.debug('Failed to parse subscription URL', { message: e.message });
@@ -113,7 +117,7 @@ class ConversionService {
 
       const convertedContent = await this._callSubconvertApi(
         subconvertUrl,
-        null,
+        subscriptionSourceUrl,
         format,
         templateUrl,
         directUrl
@@ -121,6 +125,10 @@ class ConversionService {
 
       return convertedContent;
     } catch (error) {
+      // Clash 的自定义分组和规则由远程模板决定，不能用内置模板静默替换。
+      if (format === 'clash') {
+        throw error;
+      }
       logger.warn('Subconvert conversion failed, falling back to local conversion', { message: error.message });
       // 降级时，使用默认完整模板
       return await this._convertLocally(content, format, null);
@@ -132,9 +140,22 @@ class ConversionService {
    * @private
    */
   async _callSubconvertApi(subconvertUrl, subscriptionUrl, format, customTemplateUrl, directUrl = null) {
-    const fullUrl = buildSubconvertApiUrl(subconvertUrl, subscriptionUrl, format, customTemplateUrl, directUrl);
-    logger.debug('Subconvert API request URL', { url: fullUrl });
-    return fetchUrl(fullUrl);
+    const inlineUrl = buildSubconvertApiUrl(subconvertUrl, null, format, customTemplateUrl, directUrl);
+    const sourceUrl = subscriptionUrl
+      ? buildSubconvertApiUrl(subconvertUrl, null, format, customTemplateUrl, subscriptionUrl)
+      : inlineUrl;
+    const fullUrl = Buffer.byteLength(inlineUrl, 'utf8') > MAX_SUBCONVERT_URL_BYTES ? sourceUrl : inlineUrl;
+    logger.debug('Subconvert API request prepared', { urlLength: Buffer.byteLength(fullUrl, 'utf8') });
+
+    try {
+      return await fetchUrl(fullUrl);
+    } catch (error) {
+      // 某些代理的限制更小；即使内联请求未达到阈值，414 也改为短订阅链接重试。
+      if (error.statusCode === 414 && sourceUrl !== fullUrl) {
+        return fetchUrl(sourceUrl);
+      }
+      throw error;
+    }
   }
 
   /**
