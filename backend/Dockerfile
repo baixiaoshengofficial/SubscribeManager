@@ -5,7 +5,9 @@ ENV NODE_ENV=production
 RUN apk add --no-cache wget
 
 COPY backend/package*.json ./
-RUN npm ci --omit=dev
+# Optional Node flags apply only while installing dependencies (e.g. under QEMU).
+ARG NODE_BUILD_OPTIONS=""
+RUN NODE_OPTIONS="$NODE_BUILD_OPTIONS" npm ci --omit=dev
 
 COPY backend/ ./
 COPY config ../config

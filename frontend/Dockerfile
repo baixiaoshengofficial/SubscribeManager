@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 WORKDIR /app
 COPY .env.example .env
 COPY config ./config

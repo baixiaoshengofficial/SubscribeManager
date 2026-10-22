@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.6] - 2026-10-22
 
+### Changed
+- Build frontend assets on the builder's native architecture and support optional Node flags when installing backend dependencies under emulation
+
 ### Fixed
 - Prevent HTTP 414 errors for large Subconverter requests by fetching nodes through the Base64 subscription URL
 - Retry shorter inline requests through the subscription URL when a proxy returns HTTP 414
