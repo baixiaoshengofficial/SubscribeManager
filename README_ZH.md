@@ -307,3 +307,8 @@ make dev
 ## REF
 
 [ProxyCli](https://github.com/baixiaoshengofficial/ProxyCli)
+
+## Sponsors
+
+赞助 [ForZTN](https://sponsorship.forztn.com/github.com/*).
+赞助 [FOSSVPS](https://fossvps.org).
