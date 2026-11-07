@@ -310,5 +310,5 @@ make dev
 
 ## Sponsors
 
-赞助 [ForZTN](https://sponsorship.forztn.com/github.com/*).
+赞助 [ForZTN](https://sponsorship.forztn.com/github.com/SubscribeManager).
 赞助 [FOSSVPS](https://fossvps.org).
