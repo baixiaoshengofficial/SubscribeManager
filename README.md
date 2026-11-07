@@ -283,5 +283,5 @@ When Subconvert URL is configured:
 
 ## Sponsors
 
-Sponsored by [ForZTN](https://sponsorship.forztn.com/github.com/SubscribeManager).
+Sponsored by [ForZTN](https://sponsorship.forztn.com/github.com/baixiaoshengofficial/SubscribeManager).
 Sponsored by [FOSSVPS](https://fossvps.org).
