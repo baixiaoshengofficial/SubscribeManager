@@ -279,3 +279,9 @@ When Subconvert URL is configured:
 ## REF
 
 [ProxyCli](https://github.com/baixiaoshengofficial/ProxyCli)
+
+
+## Sponsors
+
+Sponsored by [ForZTN](https://sponsorship.forztn.com/github.com/*).
+Sponsored by [FOSSVPS](https://fossvps.org).
